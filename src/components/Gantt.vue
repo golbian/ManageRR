@@ -136,9 +136,7 @@ export default {
                             Object.assign(data, initScheduleData);
                             response.schedule = schedule;
                             ProjectServices.createSchedule(data.parent, response);
-                        }).catch(err => {
-                            console.log(err);
-                        })
+                        });
                     }
                 },
                 update: function(data, id) {
