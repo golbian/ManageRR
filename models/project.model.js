@@ -4,6 +4,8 @@ module.exports = mongoose => {
         name: String,
         contract: String,
         parent: String,
+        nestedLevel: Number,
+        progress: Number,
         exoN: Number,
         facture: String,
         start_date: Date,

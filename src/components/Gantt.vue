@@ -6,8 +6,10 @@
 <script>
 import {gantt} from 'dhtmlx-gantt';
 import ProjectServices from '../services/project.service';
+import ScheduleServices from '../services/schedule.service';
 import moment from 'moment';
 import Schedule from '../../models/schedule.init';
+import Project from '../../models/project.init';
 export default {
     mounted:function(){
         var formatDate = function(date, initFormat, exitFormat) {
@@ -19,15 +21,34 @@ export default {
 
         var colHeader = '<div class="gantt_grid_head_cell gantt_grid_head_add" onclick="gantt.createTask()"></div>';
 
+        var filterValue = "";
+	var delay;
+	gantt.$doFilter = function(value){
+		filterValue = value;
+		clearTimeout(delay);
+		delay = setTimeout(function(){
+			gantt.render();
+			gantt.$root.querySelector("[data-text-filter]").focus();
+		}, 200)	
+	}
+	gantt.attachEvent("onBeforeTaskDisplay", function(id, task){
+    if(!filterValue) return true;
+
+		var normalizedText = task.text.toLowerCase();
+		var normalizedValue = filterValue.toLowerCase();
+		return normalizedText.indexOf(normalizedValue) > -1;
+	});
+	gantt.attachEvent("onGanttRender", function(){
+		gantt.$root.querySelector("[data-text-filter]").value = filterValue;
+	})
+  var textFilter = "<input data-text-filter placeholder='Task Name' class='form-control' type='text' oninput='gantt.$doFilter(this.value)'>"
+
     gantt.config.columns = [
-		{name: "text", tree: true, width: '*', resize: true},
+        {name: "text", label: textFilter, tree: true, width: '*', resize: true},
 		{name: "start_date", align: "center", resize: true},
 		{name: "duration", align: "center"},
 		{name: "buttons",label: colHeader,width: 75,template: function () {
 			return (
-				// '<font-awesome-icon icon="pencil-alt" data-action="edit"/>' +
-				// '<font-awesome-icon icon="plus" data-action="add"/>' +
-				// '<font-awesome-icon icon="times"  data-action="delete"/>'
                 '<i class="fas fa-pencil-alt" data-action="edit"></i>' +
 				'<i class="fas fa-plus" data-action="add"></i>' +
 				'<i class="fas fa-times" data-action="delete"></i>'
@@ -86,6 +107,7 @@ export default {
                     if(schedule) {
                     var scheduleStartDate = formatDate(schedule.start_date, 'YYYY-MM-DD[T00:00:00.000Z]', 'DD-MM-YYYY');
                     var scheduleEndDate = formatDate(schedule.end_date, 'YYYY-MM-DD[T00:00:00.000Z]', 'DD-MM-YYYY');
+                    schedule.id = schedule._id;
                     schedule.start_date = scheduleStartDate;
                     schedule.end_date = scheduleEndDate;
                     schedule.text = schedule.name;
@@ -97,8 +119,6 @@ export default {
                 }
                 tasks.data.push(dataset);
             }
-
-            console.log(tasks)
 
             gantt.init(this.$refs.container);
             gantt.clearAll();
@@ -118,25 +138,33 @@ export default {
                         delete data.id;
                         delete data.text;
                         delete data["!nativeeditor_status"];
+                        var initProjectData = new Project;
+                        Object.assign(data, initProjectData);
                         ProjectServices.createProject(data)
                     } else {
-                        console.log(data);
-                        ProjectServices.getProject(data.parent).then(response => {
-                            var schedule = {};
-                            schedule = data;
-                            schedule.type = "Activity";
-                            schedule._id = data.id;
-                            schedule.name = data.text;
-                            schedule.start_date = formatDate(data.start_date, 'DD-MM-YYYY', 'YYYY-MM-DD[T00:00:00.000Z]');
-                            schedule.end_date = formatDate(data.end_date, 'DD-MM-YYYY', 'YYYY-MM-DD[T00:00:00.000Z]');
-                            delete schedule.id;
-                            delete schedule.text;
-                            delete schedule["!nativeeditor_status"];
-                            var initScheduleData = new Schedule;
-                            Object.assign(data, initScheduleData);
-                            response.schedule = schedule;
-                            ProjectServices.createSchedule(data.parent, response);
-                        });
+                            var nestedLevel = 0;
+                            gantt.eachParent(function(task){
+                                nestedLevel ++;
+                                if(task.parent == '0') {
+                                    var project = {};
+                                    project.schedule = {};
+                                    project._id = String(task.id);
+                                    project.schedule = data;
+                                    project.schedule.nestedLevel = nestedLevel;
+                                    project.schedule.type = "Activity";
+                                    project.schedule._id = String(data.id);
+                                    project.schedule.name = data.text;
+                                    project.schedule.start_date = formatDate(data.start_date, 'DD-MM-YYYY', 'YYYY-MM-DD[T00:00:00.000Z]');
+                                    project.schedule.end_date = formatDate(data.end_date, 'DD-MM-YYYY', 'YYYY-MM-DD[T00:00:00.000Z]');
+                                    delete project.schedule.id;
+                                    delete project.schedule.text;
+                                    delete project.schedule["!nativeeditor_status"];
+                                    var initScheduleData = new Schedule;
+                                    Object.assign(project.schedule, initScheduleData);
+                                    console.log(project)
+                                    ScheduleServices.createSchedule(project);
+                                }
+                            }, data.id);
                     }
                 },
                 update: function(data, id) {
@@ -147,30 +175,32 @@ export default {
                         data.projectName = data.text;
                         delete data.text;
                         delete data["!nativeeditor_status"];
-                        console.log(data);
                         ProjectServices.updateProject(id,data)
                     } else {
-                        data.type = "Activity";
-                        ProjectServices.getProject(data.parent).then(response => {
-                            var schedule = {};
-                            schedule = data;
-                            schedule.type = "Activity";
-                            schedule._id = data.id;
-                            schedule.name = data.text;
-                            schedule.start_date = formatDate(data.start_date, 'DD-MM-YYYY', 'YYYY-MM-DD[T00:00:00.000Z]');
-                            schedule.end_date = formatDate(data.end_date, 'DD-MM-YYYY', 'YYYY-MM-DD[T00:00:00.000Z]');
-                            delete schedule.id;
-                            delete schedule.text;
-                            delete schedule["!nativeeditor_status"];
-                            response.schedule = schedule;
-                            console.log(data)
-                            ProjectServices.updateSchedule(data.parent, response);
-                        })
+                            gantt.eachParent(function(task){
+                                if(task.parent == '0') {
+                                    var project = {};
+                                    project.schedule = {};
+                                    project._id = String(task.id);
+                                    project.schedule = data;
+                                    project.schedule.type = "Activity";
+                                    project.schedule._id = String(data.id);
+                                    project.schedule.name = data.text;
+                                    project.schedule.start_date = formatDate(data.start_date, 'DD-MM-YYYY', 'YYYY-MM-DD[T00:00:00.000Z]');
+                                    project.schedule.end_date = formatDate(data.end_date, 'DD-MM-YYYY', 'YYYY-MM-DD[T00:00:00.000Z]');
+                                    delete project.schedule.id;
+                                    delete project.schedule.text;
+                                    delete project.schedule["!nativeeditor_status"];
+                                    var initScheduleData = new Schedule;
+                                    Object.assign(project.schedule, initScheduleData);
+                                    ScheduleServices.updateSchedule(project._id, project);
+                                }
+                            }, data.id);
                     }
                     
                 },
                 delete: function(id) {
-                    ProjectServices.deleteProject(id)
+                    console.log(id);
                 }
             },
             link: {
@@ -191,6 +221,24 @@ export default {
                 }
             }
         });
+
+        gantt.attachEvent("onBeforeTaskDelete", function(id, item){
+            console.log(item);
+            if(item.parent == '0') {
+                ProjectServices.deleteProject(id)
+            } else {
+                gantt.eachParent(function(task){
+                    if(task.parent == '0') {
+                        var data = {};
+                        data.projectId = String(task.id);
+                        data.scheduleId = id;
+                        console.log(data)
+                        ScheduleServices.deleteSchedule(data)
+                    }
+                }, id)
+            }
+            return true;
+        });
     }
 }
 </script>
@@ -198,7 +246,8 @@ export default {
 <style>
     @import "~dhtmlx-gantt/codebase/dhtmlxgantt.css";
     @import "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.0-2/css/all.min.css";
-    html, body{
+
+html, body{
   margin:0;
   padding:0;
   

@@ -22,25 +22,6 @@ export default {
             },
             submitted: false,
             dataset: [],
-                // activityName: null,
-                // type: 'Project',
-                // projectName: null,
-                // client: null,
-                // status: null,
-                // contract: null,
-                // start: null,
-                // end: null,
-                // charge: null,
-                // budget: null,
-                // exoN: null,
-                // ressource: null,
-                // jours: null,
-                // achat: null,
-                // itempo: null,
-                // facture: null,
-                // ssTrt: null,
-                // fraisA: null,
-                // fraisR: null,
         };
     },
     computed: {
@@ -53,24 +34,19 @@ export default {
 
             ProjectServices.getAllProject().then(response => {
 
-                this.dataset = response.data;
-
-                for(const data of this.dataset) {
+                for(const data of response.data) {
 
                     data.start_date = moment(data.start_date).format('DD/MM/YY')
                     data.end_date = moment(data.end_date).format('DD/MM/YY')
+                    this.dataset.push(data);
                 
                     for(const activity of data.schedules) {
-                        data.activityName = activity.name;
-                        data.contract = activity.contract;
-                        data.exoN = activity.exoN;
-                        data.facture = activity.facture;
-                        data.ressource = activity.ressource;
-                        data.jours = activity.jours;
-                        data.itempo = activity.itempo;
-                        data.achat = activity.achat;
-                        data.fraisR = activity.fraisR;
-                        data.fraisA = activity.fraisA;
+                        activity.type = "Activity";
+                        activity.activityName = activity.name;
+                        activity.jours = activity.duration;
+                        activity.start_date = moment(activity.start_date).format('DD/MM/YY')
+                        activity.end_date = moment(activity.end_date).format('DD/MM/YY')
+                        this.dataset.push(activity)
                     }
                 }
                 this.grid.data.parse(this.dataset);
@@ -80,79 +56,32 @@ export default {
 
     },
     mounted: function () {
-        // var dataset = [
-        //     {
-        //     "activity": "Schedule",
-        //     "activityName": "Elec activity",
-        //     "project": "Projet",
-        //     "projectName": "Airbus A320",
-        //     "client": "Airbus",
-        //     "status": "In Progress",
-        //     "contract": "Contrat",
-        //     "start": "15/06/20",
-        //     "end": "25/06/20",
-        //     "charge": 20,
-        //     "budget": 50,
-        //     "exoN": 50,
-        //     "ressource": "Gérard",
-        //     "jours": 10,
-        //     "achat": 1000,
-        //     "itempo":"Item PO",
-        //     "facture": 400,
-        //     "ssTrt": 500,
-        //     "fraisA": 1500,
-        //     "fraisR": 250,
-        //     },
-        //     {
-        //     "activity": "Schedule",
-        //     "activityName": "Elec activity",
-        //     "project": "Projet",
-        //     "projectName": "Airbus A320",
-        //     "client": "Airbus",
-        //     "status": "In Progress",
-        //     "contract": "Contrat",
-        //     "start": "15/06/20",
-        //     "end": "25/06/20",
-        //     "charge": 20,
-        //     "budget": 50,
-        //     "exoN": 50,
-        //     "ressource": "Gérard",
-        //     "jours": 10,
-        //     "achat": 1000,
-        //     "itempo":"Item PO",
-        //     "facture": 400,
-        //     "ssTrt": 500,
-        //     "fraisA": 1500,
-        //     "fraisR": 250,
-        //     }
-        // ];
-
         var config = {
                 columns: [
-                    { width: 100, id: 'activityName',header: [{ text: "Activity Name" }] },
-                    { width: 100, id: 'type',header: [{ text: "Type" }] },
-                    { width: 100, id: 'projectName',header: [{ text: "Project Name" }] },
-                    { width: 100, id: 'client',header: [{ text: "Client" }] },
+                    { width: 100, id: 'activityName',header: [{ text: "Activity Name" },{ content: "inputFilter" }] },
+                    { width: 100, id: 'type',header: [{ text: "Type" },{ content: "inputFilter" }] },
+                    { width: 100, id: 'projectName',header: [{ text: "Project Name" },{ content: "inputFilter" }] },
+                    { width: 100, id: 'client',header: [{ text: "Client" },{ content: "inputFilter" }] },
                     { 
                         width: 160, id: 'status', 
                         header: [{ text: "Status" }, { content: "selectFilter" }], 
                         editorType: "select", 
                         options: ["Done", "In Progress", "Not Started"] 
                     },
-                    { width: 100, id: 'contract',header: [{ text: "Contrat" }] },
-                    { width: 100, id: 'start_date',header: [{ text: "Debut" }], type: 'date'},
-                    { width: 100, id: 'end_date',header: [{ text: "\u00c9cheance" }], type: 'date'},
-                    { width: 100, id: 'charge',header: [{ text: "Charge" }] },
-                    { width: 100, id: 'budget',header: [{ text: "Budget" }] },
-                    { width: 100, id: 'exoN',header: [{ text: "EXO N" }] },
-                    { width: 100, id: 'ressource',header: [{ text: "Ressource" }] },
-                    { width: 100, id: 'jours',header: [{ text: "Jours" }]},
-                    { width: 100, id: 'achat',header: [{ text: "Achat" }] },
-                    { width: 100, id: 'itempo',header: [{ text: "Item PO" }] },
-                    { width: 100, id: 'facture',header: [{ text: "Facture" }] },
-                    { width: 100, id: 'ssTrt',header: [{ text: "Fact SS-TRT" }] },
-                    { width: 120, id: 'fraisA',header: [{ text: "Frais Autorisés" }] },
-                    { width: 100, id: 'fraisR',header: [{ text: "Frais Réel" }] },
+                    { width: 100, id: 'contract',header: [{ text: "Contrat" },{ content: "inputFilter" }] },
+                    { width: 100, id: 'start_date',header: [{ text: "Debut" },{ content: "inputFilter" }], type: 'date'},
+                    { width: 100, id: 'end_date',header: [{ text: "\u00c9cheance" },{ content: "inputFilter" }], type: 'date'},
+                    { width: 100, id: 'charge',header: [{ text: "Charge" },{ content: "inputFilter" }] },
+                    { width: 100, id: 'budget',header: [{ text: "Budget" },{ content: "inputFilter" }] },
+                    { width: 100, id: 'exoN',header: [{ text: "EXO N" },{ content: "inputFilter" }] },
+                    { width: 100, id: 'ressource',header: [{ text: "Ressource" },{ content: "inputFilter" }] },
+                    { width: 100, id: 'jours',header: [{ text: "Jours" },{ content: "inputFilter" }]},
+                    { width: 100, id: 'achat',header: [{ text: "Achat" },{ content: "inputFilter" }] },
+                    { width: 100, id: 'itempo',header: [{ text: "Item PO" },{ content: "inputFilter" }] },
+                    { width: 100, id: 'facture',header: [{ text: "Facture" },{ content: "inputFilter" }] },
+                    { width: 100, id: 'ssTrt',header: [{ text: "Fact SS-TRT" },{ content: "inputFilter" }] },
+                    { width: 120, id: 'fraisA',header: [{ text: "Frais Autorisés" },{ content: "inputFilter" }] },
+                    { width: 100, id: 'fraisR',header: [{ text: "Frais Réel" },{ content: "inputFilter" }] },
                 ],
             data: this.dataset,
             selection: "cell",
@@ -204,12 +133,7 @@ export default {
         });
     },
 
-    methods: {
-
-        // getSchedules() {
-        //     connection.get('/api/schedules/find-all')
-        // }
-        
+    methods: { 
         addProject() {
             var date = moment(new Date()).format('DD/MM/YY') 
             

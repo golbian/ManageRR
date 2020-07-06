@@ -13,17 +13,9 @@ class projectServices {
     createProject(data) {
       return http.post("/projects", data);
      }
-     
-    createSchedule(data){
-      return http.post("/projects/schedule", data)
-    }
 
     updateProject(id, data) {
       return http.put(`/projects/${id}`, data);
-    }
-
-    updateSchedule(id, data) {
-      return http.put(`/projects/schedule/${id}`, data)
     }
 
     deleteProject(id) {

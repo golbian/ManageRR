@@ -6,9 +6,6 @@ module.exports = app => {
   
     // Create a new Project
     router.post("/", projects.create);
-
-    //Create a new Schedule
-    router.post("/schedule", projects.createSchedule);
   
     // Retrieve all Projects
     router.get("/", projects.findAll);
@@ -21,10 +18,6 @@ module.exports = app => {
   
     // Update a Project with id
     router.put("/:id", projects.update);
-
-    //Update schedule in a Project
-
-    router.put("/schedule/:id", projects.updateSchedule);
   
     // Delete a Project with id
     router.delete("/:id", projects.delete);

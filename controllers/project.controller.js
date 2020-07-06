@@ -40,35 +40,6 @@ exports.create = (req, res) => {
     });
 };
 
-exports.createSchedule = (req, res) => {
-  if (!req.body) {
-    return res.status(400).send({
-      message: "Data to update can not be empty!"
-    });
-  }
-
-  console.log(req.body);
-
-  const id = req.params.id;
-
-  Project.findByIdAndUpdate({_id: id}, {$addToSet: { schedules: req.body.schedule}}, { useFindAndModify: false })
-    .then(data => {
-      if (!data) {
-        res.status(404).send({
-          message: `Cannot create Schedule. Maybe Project was not found!`
-        });
-      } else res.send({ message: "Schedule was created successfully." });
-    })
-    .catch(err => {
-      console.log(err);
-      res.status(500).send({
-        message: "Error creating Schedule"
-      });
-    });
-};
-
-
-
 // Retrieve all Projects from the database.
 exports.findAll = (req, res) => {
     const name = req.query.name;
@@ -131,38 +102,12 @@ exports.update = (req, res) => {
       });
   };
 
-  exports.updateSchedule = (req, res) => {
-    if (!req.body) {
-      return res.status(400).send({
-        message: "Data to update can not be empty!"
-      });
-    }
-
-    console.log(req.body);
-  
-    const id = req.params.id;
-  
-    Project.findByIdAndUpdate({_id: id}, {$set: { schedules: req.body.schedule}}, { useFindAndModify: false })
-      .then(data => {
-        if (!data) {
-          res.status(404).send({
-            message: `Cannot update Schedule with id=${id}. Maybe Schedule was not found!`
-          });
-        } else res.send({ message: "Schedule was updated successfully." });
-      })
-      .catch(err => {
-        console.log(err);
-        res.status(500).send({
-          message: "Error updating Schedule with id=" + id
-        });
-      });
-  };
-
 // Delete a Project with the specified id in the request
 exports.delete = (req, res) => {
     const id = req.params.id;
+    console.log(id)
   
-    Project.findByIdAndRemove(id)
+    Project.findOneAndDelete({_id : id}, { useFindAndModify: false })
       .then(data => {
         if (!data) {
           res.status(404).send({
@@ -170,7 +115,7 @@ exports.delete = (req, res) => {
           });
         } else {
           res.send({
-            message: "Project was deleted successfully!"
+            message: "Project with id="+ id +" was deleted successfully!"
           });
         }
       })
