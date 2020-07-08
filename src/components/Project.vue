@@ -5,12 +5,13 @@
 </div>
 </template>
 <script>
-import {gantt} from 'dhtmlx-gantt';
+import {Gantt} from 'dhtmlx-gantt';
 import { Grid as GridDHX} from "dhx-grid";
 import "dhx-grid/codebase/grid.min.css";
 import moment from 'moment';
 import ProjectServices from '../services/project.service';
 import ScheduleServices from '../services/schedule.service';
+import LinkServices from '../services/link.service';
 import Schedule from '../../models/schedule.init';
 
 export default {
@@ -53,22 +54,22 @@ export default {
             var data = moment(date, initFormat).format(exitFormat);
             return data
         }
+        
         var tasks = {};
         tasks.data = [];
+        tasks.links = [];
         var projectId = this.$route.params.id;
 
         var colHeader = '<div class="gantt_grid_head_cell gantt_grid_head_add" onclick="gantt.createTask()"></div>';
 
         var filterValue = "";
-        var delay;
+
+    var gantt = Gantt.getGanttInstance();
         
 	gantt.$doFilter = function(value){
 		filterValue = value;
-		clearTimeout(delay);
-		delay = setTimeout(function(){
 			gantt.render();
 			gantt.$root.querySelector("[data-text-filter]").focus();
-		}, 200)	
 	}
 	gantt.attachEvent("onBeforeTaskDisplay", function(id, task){
     if(!filterValue) return true;
@@ -77,7 +78,8 @@ export default {
 		var normalizedValue = filterValue.toLowerCase();
 		return normalizedText.indexOf(normalizedValue) > -1;
 	});
-	gantt.attachEvent("onGanttRender", function(){
+	
+    gantt.attachEvent("onGanttRender", function(){
 		gantt.$root.querySelector("[data-text-filter]").value = filterValue;
 	})
   var textFilter = "<input data-text-filter placeholder='Task Name' class='form-control' type='text' oninput='gantt.$doFilter(this.value)'>"
@@ -88,6 +90,7 @@ export default {
 		{name: "duration", align: "center"},
 		{name: "buttons",label: colHeader,width: 75,template: function () {
 			return (
+                '<i class="fas fa-plus" data-action="add"></i>' +
 				'<i class="fas fa-times" data-action="delete"></i>'
 				);
 		}}
@@ -98,6 +101,9 @@ export default {
 		if(button){
 			var action = button.getAttribute("data-action");
 			switch (action) {
+                case "add":
+					gantt.createTask(null, id);
+					break;
 				case "delete":
 					gantt.confirm({
 						title: gantt.locale.labels.confirm_deleting_title,
@@ -130,6 +136,13 @@ export default {
                 data.parent = schedule.parent;
                 tasks.data.push(data)
             }
+
+            for(const link of response.data.links) {
+                link.id = link._id;
+                delete link._id;
+                tasks.links.push(link);
+            }
+
             gantt.init("gantt_container")
             gantt.clearAll();
             gantt.parse(tasks);
@@ -196,7 +209,8 @@ export default {
             });
         })
 
-        gantt.createDataProcessor({ 
+        
+        var scheduleDp = gantt.createDataProcessor({ 
             task: {
                 create: function(data) {
                     console.log(data);
@@ -204,6 +218,9 @@ export default {
                     project.schedule = {};
                     project._id = projectId;
                     project.schedule = data;
+                    if(project.schedule.parent == "0") {
+                        project.schedule.parent = projectId;
+                    }
                     project.schedule.type = "Activity";
                     project.schedule._id = String(data.id);
                     project.schedule.name = data.text;
@@ -214,13 +231,16 @@ export default {
                     delete project.schedule["!nativeeditor_status"];
                     var initScheduleData = new Schedule;
                     Object.assign(project.schedule, initScheduleData);
-                    ScheduleServices.createSchedule(project);
+                    ScheduleServices.createSchedule(project).then(gantt.message({type:"success", text:"Schedule was created successfully"}));
                 },
                 update: function(data, id) {
                     var project = {};
                     project.schedule = {};
                     project._id = projectId;
                     project.schedule = data;
+                    if(project.schedule.parent == "0") {
+                        project.schedule.parent = projectId;
+                    }
                     project.schedule.type = "Activity";
                     project.schedule._id = String(id);
                     project.schedule.name = data.text;
@@ -231,7 +251,7 @@ export default {
                     delete project.schedule["!nativeeditor_status"];
                     var initScheduleData = new Schedule;
                     Object.assign(project.schedule, initScheduleData);
-                    ScheduleServices.updateSchedule(project._id, project);
+                    ScheduleServices.updateSchedule(project._id, project).then(gantt.message({type:"success", text:"Schedule has been updated successfully"}));
                 },
                 delete: function(id) {
                     console.log(id);
@@ -239,16 +259,22 @@ export default {
             },
             link: {
                 create: function(link) {
-                    let data = {};
-                    data.link = link;
-                    ProjectServices.updateProject(link.source,data)
-                    ProjectServices.updateProject(link.target,data)
+                        var project = {};
+                        project._id = projectId;
+                        project.link = link;
+                        project.link._id = link.id;
+                        delete project.link.id;
+                        delete link["!nativeeditor_status"];
+                        LinkServices.createLink(project).then(gantt.message({type:"success", text:"Link was created successfully"}));
                 },
                 update: function(link) {
-                    let data = {};
-                    data.link = link;
-                    ProjectServices.updateProject(link.source,data)
-                    ProjectServices.updateProject(link.target,data)
+                        var project = {};
+                        project._id = projectId;
+                        project.link = link;
+                        project.link._id = link.id;
+                        delete project.link.id;
+                        delete link["!nativeeditor_status"];
+                        LinkServices.updateLink(project._id, project).then(gantt.message({type:"success", text:"Link has been updated successfully"}));
                 },
                 delete: function(id) {
                     console.log(id)
@@ -256,12 +282,28 @@ export default {
             }
         });
 
+        console.log(scheduleDp)
+
         gantt.attachEvent("onBeforeTaskDelete", function(id){
                         var data = {};
                         data.projectId = projectId;
                         data.scheduleId = id;
-                        ScheduleServices.deleteSchedule(data)
+                        ScheduleServices.deleteSchedule(data).then(gantt.message({type:"success", text:"Schedule has been deleted successfully"}));
         });
+        gantt.attachEvent("onBeforeLinkDelete", function(id){
+                    var data = {};
+                    data.projectId = projectId;
+                    data.linkId = String(id);
+                    LinkServices.deleteLink(data).then(gantt.message({type:"success", text:"Link has been deleted successfully"}))
+            return true;
+        });
+    },
+    watch:{
+        '$route' (to, from){
+            console.log(to, from)
+            var gantt = Gantt.getGanttInstance();
+            gantt.destructor();
+        }
     },
 }
 
@@ -284,6 +326,11 @@ html, body{
   height: 44vh;
 }
 
+.gantt-success div {
+    color: #155724;
+    background-color: #d4edda;
+    border-color: #c3e6cb;
+}
 
 .fas {
   cursor: pointer;

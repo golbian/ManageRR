@@ -18,6 +18,13 @@ module.exports = mongoose => {
         fraisA: Number
     });
 
+    var linkSchema = mongoose.Schema({
+        _id: String,
+        source: String,
+        target: String,
+        type: Number,
+    });    
+
     var projectSchema = mongoose.Schema({
         _id: String,
         projectName: String,
@@ -32,7 +39,7 @@ module.exports = mongoose => {
         charge: Number,
         budget: Number,
         ssTrt: Number,
-        link: Array,
+        links: [linkSchema],
         schedules: [activitySchema]
     });
 
