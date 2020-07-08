@@ -1,9 +1,21 @@
 # manage_rr
 
+
+### install mongoDB on windows
+```
+https://docs.mongodb.com/manual/tutorial/install-mongodb-on-windows/
+```
+
 ## Project setup
 ```
 npm install
 ```
+
+## initiate the database
+```
+mongorestore --db=manage_rr dump/manage_rr
+```
+
 
 ### Compiles and hot-reloads for development
 ```
