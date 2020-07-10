@@ -11,6 +11,7 @@ import { Grid as GridDHX} from "dhx-grid";
 import "dhx-grid/codebase/grid.min.css";
 import GridServices from '../services/grid.service';
 import ProjectServices from '../services/project.service';
+import ScheduleServices from '../services/schedule.service';
 import moment from 'moment';
 
 export default {
@@ -30,22 +31,26 @@ export default {
         }
     },
     created() {
-            
+
+        var formatDate = function(date, initFormat, exitFormat) {
+            var data = moment(date, initFormat).format(exitFormat);
+            return data
+        }
 
             ProjectServices.getAllProject().then(response => {
 
                 for(const data of response.data) {
 
-                    data.start_date = moment(data.start_date).format('DD/MM/YY')
-                    data.end_date = moment(data.end_date).format('DD/MM/YY')
+                    data.id = data._id;
+                    data.start_date = formatDate(data.start_date, 'YYYY-MM-DD[T00:00:00.000Z]', 'DD-MM-YYYY');
+                    data.end_date = formatDate(data.end_date, 'YYYY-MM-DD[T00:00:00.000Z]', 'DD-MM-YYYY');
                     this.dataset.push(data);
                 
                     for(const activity of data.schedules) {
-                        activity.type = "Activity";
-                        activity.activityName = activity.name;
-                        activity.jours = activity.duration;
-                        activity.start_date = moment(activity.start_date).format('DD/MM/YY')
-                        activity.end_date = moment(activity.end_date).format('DD/MM/YY')
+                        activity.projectId = data._id;
+                        activity.id = activity._id;
+                        activity.start_date = formatDate(activity.start_date, 'YYYY-MM-DD[T00:00:00.000Z]', 'DD-MM-YYYY');
+                        activity.end_date = formatDate(activity.end_date, 'YYYY-MM-DD[T00:00:00.000Z]', 'DD-MM-YYYY');
                         this.dataset.push(activity)
                     }
                 }
@@ -56,11 +61,16 @@ export default {
 
     },
     mounted: function () {
+
+        var formatDate = function(date, initFormat, exitFormat) {
+            var data = moment(date, initFormat).format(exitFormat);
+            return data
+        }
+
         var config = {
                 columns: [
-                    { width: 100, id: 'activityName',header: [{ text: "Activity Name" },{ content: "inputFilter" }] },
                     { width: 100, id: 'type',header: [{ text: "Type" },{ content: "inputFilter" }] },
-                    { width: 100, id: 'projectName',header: [{ text: "Project Name" },{ content: "inputFilter" }] },
+                    { width: 100, id: 'name',header: [{ text: "name" },{ content: "inputFilter" }] },
                     { width: 100, id: 'client',header: [{ text: "Client" },{ content: "inputFilter" }] },
                     { 
                         width: 160, id: 'status', 
@@ -75,7 +85,7 @@ export default {
                     { width: 100, id: 'budget',header: [{ text: "Budget" },{ content: "inputFilter" }] },
                     { width: 100, id: 'exoN',header: [{ text: "EXO N" },{ content: "inputFilter" }] },
                     { width: 100, id: 'ressource',header: [{ text: "Ressource" },{ content: "inputFilter" }] },
-                    { width: 100, id: 'jours',header: [{ text: "Jours" },{ content: "inputFilter" }]},
+                    { width: 100, id: 'duration',header: [{ text: "Jours" },{ content: "inputFilter" }]},
                     { width: 100, id: 'achat',header: [{ text: "Achat" },{ content: "inputFilter" }] },
                     { width: 100, id: 'itempo',header: [{ text: "Item PO" },{ content: "inputFilter" }] },
                     { width: 100, id: 'facture',header: [{ text: "Facture" },{ content: "inputFilter" }] },
@@ -96,39 +106,54 @@ export default {
         this.grid.events.on('Change', function(id, status, data){
 
             var project = {};
-            var activity = {};
-            var startDate = moment(data.start_date,'DD/MM/YY').format();
-            var endDate = moment(data.end_date, 'DD/MM/YY').format();
+            project.schedule = {};
+            
+            var startDate = formatDate(data.start_date, 'DD-MM-YYYY', 'YYYY-MM-DD[T00:00:00.000Z]');
+            var endDate = formatDate(data.end_date, 'DD-MM-YYYY', 'YYYY-MM-DD[T00:00:00.000Z]');
 
-            project._id = data.id;
-            project.projectName = data.projectName;
-            project.type = data.type;
-            project.client = data.client;
-            project.status = data.status;
-            project.start_date = startDate;
-            project.end_date = endDate;
-            project.charge = data.charge;
-            project.budget = data.budget;
-            project.ssTrt = data.ssTrt;
-            project.schedules = [];
 
-            activity.activityName = data.activityName;
-            activity.contract = data.contract;
-            activity.exoN = data.exoN;
-            activity.facture = data.facture;
-            activity.ressource = data.ressource;
-            activity.jours = data.jours;
-            activity.itempo = data.itempo;
-            activity.achat = data.achat;
-            activity.fraisR = data.fraisR;
-            activity.fraisA = data.fraisA;
-
-            project.schedules.push(activity);
-
-            if(status === 'update') {
-                ProjectServices.updateProject(id,project)
-            } else if(status === "add") {
-                ProjectServices.createProject(project)
+            if(data.type === "project") {
+                console.log(data);
+                project._id = data.id;
+                project.name = data.name;
+                project.type = data.type;
+                project.client = data.client;
+                project.status = data.status;
+                project.start_date = startDate;
+                project.end_date = endDate;
+                project.charge = data.charge;
+                project.budget = data.budget;
+                project.ssTrt = data.ssTrt;
+                if(status === 'update') {
+                    ProjectServices.updateProject(id,project)
+                    } else if(status === "add") {
+                        ProjectServices.createProject(project)
+                    }
+            
+            } else if(data.type === "task") {
+                console.log(data);
+                project._id = data.parent;
+                project.schedule._id = data.id;
+                project.schedule.type = data.type;
+                project.schedule.status = data.status;
+                project.schedule.parent = data.parent;
+                project.schedule.name = data.name
+                project.schedule.start_date = startDate;
+                project.schedule.end_date = endDate;
+                project.schedule.contract = data.contract;
+                project.schedule.exoN = data.exoN;
+                project.schedule.facture = data.facture;
+                project.schedule.ressource = data.ressource;
+                project.schedule.duration = data.duration;
+                project.schedule.itempo = data.itempo;
+                project.schedule.achat = data.achat;
+                project.schedule.fraisR = data.fraisR;
+                project.schedule.fraisA = data.fraisA;
+                if(status === 'update') {
+                    ScheduleServices.updateSchedule(id,project)
+                } else if(status === "add") {
+                    ScheduleServices.createSchedule(project)
+                }
             }
         });
     },
@@ -138,9 +163,8 @@ export default {
             var date = moment(new Date()).format('DD/MM/YY') 
             
             this.grid.data.add({
-            "activityName": "ActivityName",
-            "type": "Project",
-            "projectName": "ProjectName",
+            "type": "project",
+            "name": "name",
             "client": "Client Name",
             "status": "In Progress",
             "contract": "Contract",

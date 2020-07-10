@@ -47,6 +47,8 @@ exports.create = (req, res) => {
         "schedules.$.start_date": req.body.schedule.start_date,
         "schedules.$.duration": req.body.schedule.duration,
         "schedules.$.parent": req.body.schedule.parent,
+        "schedules.$.status": req.body.schedule.status,
+        "schedules.$.type": req.body.schedule.type,
         "schedules.$.end_date": req.body.schedule.end_date,
         "schedules.$.name": req.body.schedule.name,
         "schedules.$.contract": req.body.schedule.contract,

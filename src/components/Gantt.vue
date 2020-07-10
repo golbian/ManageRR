@@ -12,11 +12,6 @@ import moment from 'moment';
 import Schedule from '../../models/schedule.init';
 import Project from '../../models/project.init';
 export default {
-    // data() {
-    //     return {
-    //         gantt: null,
-    //     };
-    // },
     mounted:function(){
         var formatDate = function(date, initFormat, exitFormat) {
             var data = moment(date, initFormat).format(exitFormat);
@@ -25,17 +20,66 @@ export default {
 
         var router = this.$router;
 
-        var gantt = Gantt.getGanttInstance();
+        const gantt = Gantt.getGanttInstance({
+            plugins:{
+                click_drag: true,
+                // auto_scheduling: true,
+                critical_path: true,
+                drag_timeline: true,
+                grouping: true
+            },
+            config: {
+                work_time: true,
+                // auto_scheduling_compatibility: true,
+                // auto_scheduling: true,
+                // auto_scheduling_strict: true,
+                // auto_scheduling_initial: true,
+                highlight_critical_path: true,
+            },
+        });
 
-        var colHeader = '<div class="gantt_grid_head_cell gantt_grid_head_add" onclick="gantt.createTask()"></div>';
+        var textFilter = "<input data-text-filter placeholder='Task Name' class='form-control' type='text' oninput='Gantt.$doFilter(this.value)'>"
+        var colHeader = '<div class="gantt_grid_head_cell gantt_grid_head_add  " style="width:44px;" role="button" aria-label="New task" data-column-id="add" ></div>';
+
+        gantt.config.columns = [
+            {name: "text", label: textFilter, tree: true, width: '*', resize: true},
+            {name: "start_date", align: "center", resize: true},
+            {name: "duration", align: "center"},
+            {name: "buttons",label: colHeader,width: 75,template: function (task) {
+                if(task.parent == "0") {
+                    return (
+                        '<i class="fas fa-pencil-alt" data-action="edit"></i>' +
+                        '<i class="fas fa-plus" data-action="add"></i>' +
+                        '<i class="fas fa-times" data-action="delete"></i>'
+                    );
+                } else {
+                    return (
+                        '<i class="fas fa-plus" data-action="add"></i>' +
+                        '<i class="fas fa-times" data-action="delete"></i>'
+                    );
+                }
+            }}
+        ];
 
         var filterValue = "";
+        Gantt.$doFilter = function(value){
+            filterValue = value;
+            gantt.refreshData();
+        }
 
-	gantt.$doFilter = function(value){
-		filterValue = value;
-			gantt.render();
-			gantt.$root.querySelector("[data-text-filter]").focus();
-	}
+        gantt.config.lightbox.sections = [
+            {name: "description", height: 70, map_to: "text", type: "textarea"},
+            {name: "type", type: "typeselect", map_to: "type"},
+            {name: "time", height: 72, type: "duration", map_to: "auto"}
+        ];
+        
+        gantt.templates.rightside_text = function(start, end, task){
+            if(task.type == gantt.config.types.milestone){
+                return task.text;
+            }
+        return "";
+    };
+
 	gantt.attachEvent("onBeforeTaskDisplay", function(id, task){
     if(!filterValue) return true;
 
@@ -46,28 +90,6 @@ export default {
 	gantt.attachEvent("onGanttRender", function(){
 		gantt.$root.querySelector("[data-text-filter]").value = filterValue;
 	})
-  var textFilter = "<input data-text-filter placeholder='Task Name' class='form-control' type='text' oninput='gantt.$doFilter(this.value)'>"
-
-    gantt.config.columns = [
-        {name: "text", label: textFilter, tree: true, width: '*', resize: true},
-		{name: "start_date", align: "center", resize: true},
-		{name: "duration", align: "center"},
-		{name: "buttons",label: colHeader,width: 75,template: function (task) {
-            if(task.parent == "0") {
-                return (
-                '<i class="fas fa-pencil-alt" data-action="edit"></i>' +
-				'<i class="fas fa-plus" data-action="add"></i>' +
-				'<i class="fas fa-times" data-action="delete"></i>'
-				);
-            } else {
-                return (
-				'<i class="fas fa-plus" data-action="add"></i>' +
-				'<i class="fas fa-times" data-action="delete"></i>'
-				);
-            }
-			
-		}}
-	];
 
 	gantt.attachEvent("onTaskClick", function(id, e){
 		var button = e.target.closest("[data-action]")
@@ -75,7 +97,7 @@ export default {
 			var action = button.getAttribute("data-action");
 			switch (action) {
 				case "edit":
-                    gantt.$doFilter("");
+                    Gantt.$doFilter("");
 					router.push({ path: `/project/${id}` })
 					break;
 				case "add":
@@ -109,9 +131,9 @@ export default {
                 var startDate = formatDate(project.start_date, 'YYYY-MM-DD[T00:00:00.000Z]', 'DD-MM-YYYY');
                 var endDate = formatDate(project.end_date, 'YYYY-MM-DD[T00:00:00.000Z]', 'DD-MM-YYYY');
 
-
                 dataset.id = project._id;
                 dataset.progress = project.progress;
+                dataset.type = project.type;
                 dataset.parent = project.parent;
                 dataset.text = project.projectName;
                 dataset.start_date = startDate;
@@ -134,19 +156,16 @@ export default {
                     tasks.links.push(link);
                 }
                 tasks.data.push(dataset);
-                console.log(tasks.data);
             }
-
             gantt.init(this.$refs.container);
-            gantt.clearAll();
             gantt.parse(tasks);
         });
         
-        var projectDp = gantt.createDataProcessor({ 
+        gantt.createDataProcessor({ 
             task: {
                 create: function(data) {
+                    console.log(data);
                     if(data.parent == '0'){
-                        data.type = "Project";
                         data.start_date = formatDate(data.start_date, 'DD-MM-YYYY', 'YYYY-MM-DD[T00:00:00.000Z]');
                         data.end_date = formatDate(data.end_date, 'DD-MM-YYYY', 'YYYY-MM-DD[T00:00:00.000Z]');
                         data._id = data.id;
@@ -168,7 +187,7 @@ export default {
                                     project._id = String(task.id);
                                     project.schedule = data;
                                     project.schedule.nestedLevel = nestedLevel;
-                                    project.schedule.type = "Activity";
+                                    project.schedule.type = data.type;
                                     project.schedule._id = String(data.id);
                                     project.schedule.name = data.text;
                                     project.schedule.start_date = formatDate(data.start_date, 'DD-MM-YYYY', 'YYYY-MM-DD[T00:00:00.000Z]');
@@ -185,7 +204,6 @@ export default {
                 },
                 update: function(data, id) {
                     if(data.parent == '0'){
-                        data.type = "Project";
                         data.start_date = formatDate(data.start_date, 'DD-MM-YYYY', 'YYYY-MM-DD[T00:00:00.000Z]');
                         data.end_date = formatDate(data.end_date, 'DD-MM-YYYY', 'YYYY-MM-DD[T00:00:00.000Z]');
                         data.projectName = data.text;
@@ -196,10 +214,11 @@ export default {
                             gantt.eachParent(function(task){
                                 if(task.parent == '0') {
                                     var project = {};
+                                    console.log(data)
                                     project.schedule = {};
                                     project._id = String(task.id);
                                     project.schedule = data;
-                                    project.schedule.type = "Activity";
+                                    project.schedule.type = data.type;
                                     project.schedule._id = String(data.id);
                                     project.schedule.name = data.text;
                                     project.schedule.start_date = formatDate(data.start_date, 'DD-MM-YYYY', 'YYYY-MM-DD[T00:00:00.000Z]');
@@ -252,8 +271,6 @@ export default {
                 }
             }
         });
-
-        console.log(projectDp)
 
         gantt.attachEvent("onBeforeTaskDelete", function(id, item){
             if(item.parent == '0') {

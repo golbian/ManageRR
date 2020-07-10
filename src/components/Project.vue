@@ -64,13 +64,43 @@ export default {
 
         var filterValue = "";
 
-    var gantt = Gantt.getGanttInstance();
+    const gantt = Gantt.getGanttInstance({
+            plugins:{
+                click_drag: true,
+                // auto_scheduling: true,
+                critical_path: true,
+                drag_timeline: true,
+                grouping: true
+            },
+            config: {
+                work_time: true,
+                // auto_scheduling_compatibility: true,
+                // auto_scheduling: true,
+                // auto_scheduling_strict: true,
+                // auto_scheduling_initial: true,
+                highlight_critical_path: true,
+            },
+        });
+
+        var textFilter = "<input data-text-filter placeholder='Task Name' class='form-control' type='text' oninput='Gantt.$doFilter(this.value)'>"
+
+        gantt.config.columns = [
+            {name: "text", label: textFilter, tree: true, width: '*', resize: true},
+            {name: "start_date", align: "center", resize: true},
+            {name: "duration", align: "center"},
+            {name: "buttons",label: colHeader,width: 75,template: function () {
+                return (
+                    '<i class="fas fa-plus" data-action="add"></i>' +
+                    '<i class="fas fa-times" data-action="delete"></i>'
+                );
+            }}
+        ];
         
-	gantt.$doFilter = function(value){
-		filterValue = value;
-			gantt.render();
-			gantt.$root.querySelector("[data-text-filter]").focus();
-	}
+        Gantt.$doFilter = function(value){
+            filterValue = value;
+            gantt.refreshData();
+        }
+
 	gantt.attachEvent("onBeforeTaskDisplay", function(id, task){
     if(!filterValue) return true;
 
@@ -82,19 +112,6 @@ export default {
     gantt.attachEvent("onGanttRender", function(){
 		gantt.$root.querySelector("[data-text-filter]").value = filterValue;
 	})
-  var textFilter = "<input data-text-filter placeholder='Task Name' class='form-control' type='text' oninput='gantt.$doFilter(this.value)'>"
-
-    gantt.config.columns = [
-		{name: "text", label: textFilter, tree: true, width: '*', resize: true},
-		{name: "start_date", align: "center", resize: true},
-		{name: "duration", align: "center"},
-		{name: "buttons",label: colHeader,width: 75,template: function () {
-			return (
-                '<i class="fas fa-plus" data-action="add"></i>' +
-				'<i class="fas fa-times" data-action="delete"></i>'
-				);
-		}}
-	];
 
 	gantt.attachEvent("onTaskClick", function(id, e){
 		var button = e.target.closest("[data-action]")
