@@ -39,7 +39,7 @@ export default {
         });
 
         var textFilter = "<input data-text-filter placeholder='Task Name' class='form-control' type='text' oninput='Gantt.$doFilter(this.value)'>"
-        var colHeader = '<div class="gantt_grid_head_cell gantt_grid_head_add  " style="width:44px;" role="button" aria-label="New task" data-column-id="add" ></div>';
+        var colHeader = '<div class="gantt_grid_head_add" style="width:74px;border-left: 1px solid #cecece !important;" role="button" aria-label="New task" data-column-id="add" ></div>';
 
         gantt.config.columns = [
             {name: "text", label: textFilter, tree: true, width: '*', resize: true},
@@ -274,7 +274,7 @@ export default {
 
         gantt.attachEvent("onBeforeTaskDelete", function(id, item){
             if(item.parent == '0') {
-                ProjectServices.deleteProject(id)
+                ProjectServices.deleteProject(id).then(gantt.message({type:"success", text:"Project has been deleted successfully"}))
             } else {
                 gantt.eachParent(function(task){
                     if(task.parent == '0') {
@@ -332,6 +332,10 @@ html, body{
   text-align: center;
   opacity: 0.5;
   padding: 5px;
+}
+
+.gantt_grid_head_add:hover {
+    opacity: 1;
 }
 
 .fas:hover {
