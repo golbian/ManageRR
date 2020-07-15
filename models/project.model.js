@@ -4,6 +4,7 @@ module.exports = mongoose => {
         name: String,
         kam: String,
         pm: String,
+        client: String,
         stage: String,
         temp: String,
         domaine: String,

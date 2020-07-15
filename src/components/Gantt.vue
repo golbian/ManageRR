@@ -210,26 +210,25 @@ export default {
                         delete data["!nativeeditor_status"];
                         ProjectServices.updateProject(id,data).then(gantt.message({type:"success", text:"Project has been updated successfully"}))
                     } else {
-                            gantt.eachParent(function(task){
-                                if(task.parent == '0') {
-                                    var project = {};
-                                    console.log(data)
-                                    project.schedule = {};
-                                    project._id = String(task.id);
-                                    project.schedule = data;
-                                    project.schedule.type = data.type;
-                                    project.schedule._id = String(data.id);
-                                    project.schedule.name = data.text;
-                                    project.schedule.start_date = formatDate(data.start_date, 'DD-MM-YYYY', 'YYYY-MM-DD[T00:00:00.000Z]');
-                                    project.schedule.end_date = formatDate(data.end_date, 'DD-MM-YYYY', 'YYYY-MM-DD[T00:00:00.000Z]');
-                                    delete project.schedule.id;
-                                    delete project.schedule.text;
-                                    delete project.schedule["!nativeeditor_status"];
-                                    var initScheduleData = new Schedule;
-                                    Object.assign(project.schedule, initScheduleData);
-                                    ScheduleServices.updateSchedule(project._id, project).then(gantt.message({type:"success", text:"Task has been updated successfully"}))
-                                }
-                            }, data.id);
+                        gantt.eachParent(function(task){
+                            if(task.parent == '0') {
+                                var project = {};
+                                project.schedule = {};
+                                project._id = String(task.id);
+                                project.schedule = data;
+                                project.schedule.type = data.type;
+                                project.schedule._id = String(data.id);
+                                project.schedule.name = data.text;
+                                project.schedule.start_date = formatDate(data.start_date, 'DD-MM-YYYY', 'YYYY-MM-DD[T00:00:00.000Z]');
+                                project.schedule.end_date = formatDate(data.end_date, 'DD-MM-YYYY', 'YYYY-MM-DD[T00:00:00.000Z]');
+                                delete project.schedule.id;
+                                delete project.schedule.text;
+                                delete project.schedule["!nativeeditor_status"];
+                                var initScheduleData = new Schedule;
+                                Object.assign(project.schedule, initScheduleData);
+                                ScheduleServices.updateSchedule(project._id, project).then(gantt.message({type:"success", text:"Task has been updated successfully"}))
+                            }
+                        }, data.id);
                     }
                     
                 },
@@ -309,7 +308,7 @@ export default {
     },
     watch:{
         '$route' (to, from){
-            console.log(to, from)
+            console.log(to, from);
             var gantt = Gantt.getGanttInstance();
             gantt.destructor();
         }
