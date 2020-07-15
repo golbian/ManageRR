@@ -42,8 +42,8 @@ export default {
                 schedule.id = schedule._id;
                 schedule.start_date = startDate;
                 schedule.end_date = endDate;
-                schedule.jours = schedule.duration
-                schedule.activityName = schedule.name;
+                schedule.jours = schedule.duration;
+                // schedule.name = schedule.name;
             }
 
             this.grid.data.parse(this.gridData);
@@ -60,7 +60,7 @@ export default {
         tasks.links = [];
         var projectId = this.$route.params.id;
 
-        var colHeader = '<div class="gantt_grid_head_cell gantt_grid_head_add" onclick="gantt.createTask()"></div>';
+        var colHeader = '<div class="gantt_grid_head_add" style="width:74px;border-left: 1px solid #cecece !important;" role="button" aria-label="New task" data-column-id="add" ></div>';
 
         var filterValue = "";
 
@@ -168,19 +168,42 @@ export default {
 
             var config = {
                 columns: [
-                    { width: 100, id: 'activityName',header: [{ text: "Activity Name" },{ content: "inputFilter" }] },
-                    { width: 100, id: 'type',header: [{ text: "Type" },{ content: "inputFilter" }] },
-                    { width: 100, id: 'contract',header: [{ text: "Contrat" },{ content: "inputFilter" }] },
-                    { width: 100, id: 'start_date',header: [{ text: "Debut" },{ content: "inputFilter" }], type: 'date'},
-                    { width: 100, id: 'end_date',header: [{ text: "\u00c9cheance" },{ content: "inputFilter" }], type: 'date'},
-                    { width: 100, id: 'exoN',header: [{ text: "EXO N" },{ content: "inputFilter" }] },
+                    { width: 100, id: 'name',header: [{ text: "Designation" },{ content: "inputFilter" }] },
+                    { width: 100, id: 'country',header: [{ text: "Country" },{ content: "inputFilter" }] },
+                    { width: 100, id: 'client',header: [{ text: "Client" },{ content: "inputFilter" }] },
+                    { width: 100, id: 'kam',header: [{ text: "KAM" },{ content: "inputFilter" }] },
+                    { width: 100, id: 'pm',header: [{ text: "PM" },{ content: "inputFilter" }] },
+                    { 
+                        width: 160, id: 'stage', 
+                        header: [{ text: "Stage" }, { content: "selectFilter" }], 
+                        editorType: "select", 
+                        options: ["Opportunity", "RFQ/RFI", "BID", "Final Negociation", "Lost", "Abandoned", "Commandes", "Livrée", "Facture", "Suspended"] 
+                    },
+                    { 
+                        width: 160, id: 'temp', 
+                        header: [{ text: "Température" }, { content: "selectFilter" }], 
+                        editorType: "select", 
+                        options: ["Froid", "Moyen", "Chaud"] 
+                    },
+                    { 
+                        width: 160, id: 'domaine', 
+                        header: [{ text: "Domaine" }, { content: "selectFilter" }], 
+                        editorType: "select", 
+                        options: ["Training", "Product & System", "In-Service", "Improvaero"] 
+                    },
+                    { width: 100, id: 'charge',header: [{ text: "Charge" },{ content: "inputFilter" }] },
+                    { width: 100, id: 'ca',header: [{ text: "CA" },{ content: "inputFilter" }] },
+                    { width: 100, id: 'start_date',header: [{ text: "Start Date" },{ content: "inputFilter" }], type: 'date'},
+                    { width: 100, id: 'end_date',header: [{ text: "End Date" },{ content: "inputFilter" }], type: 'date'},
+                    { 
+                        width: 160, id: 'status', 
+                        header: [{ text: "Status" }, { content: "selectFilter" }], 
+                        editorType: "select", 
+                        options: ["Renewal", "Extension", "New Contract"] 
+                    },
+                    { width: 100, id: 'comments',header: [{ text: "Comments" },{ content: "inputFilter" }] },
                     { width: 100, id: 'ressource',header: [{ text: "Ressource" },{ content: "inputFilter" }] },
-                    { width: 100, id: 'jours',header: [{ text: "Jours" },{ content: "inputFilter" }]},
-                    { width: 100, id: 'achat',header: [{ text: "Achat" },{ content: "inputFilter" }] },
-                    { width: 100, id: 'itempo',header: [{ text: "Item PO" },{ content: "inputFilter" }] },
-                    { width: 100, id: 'facture',header: [{ text: "Facture" },{ content: "inputFilter" }] },
-                    { width: 120, id: 'fraisA',header: [{ text: "Frais Autorisés" },{ content: "inputFilter" }] },
-                    { width: 100, id: 'fraisR',header: [{ text: "Frais Réel" },{ content: "inputFilter" }] },
+                    { width: 100, id: 'duration',header: [{ text: "Jours" },{ content: "inputFilter" }]},
                 ],
                 data: this.gridData,
                 selection: "cell",
@@ -200,18 +223,26 @@ export default {
                 project._id = projectId;
                 project.schedule = {};
                 project.schedule._id = id;
-                project.schedule.name = data.activityName;
                 project.schedule.start_date = startDate;
                 project.schedule.end_date = endDate;
-                project.schedule.contract = data.contract;
-                project.schedule.exoN = data.exoN;
-                project.schedule.facture = data.facture;
-                project.schedule.ressource = data.ressource;
                 project.schedule.duration = data.jours;
-                project.schedule.itempo = data.itempo;
-                project.schedule.achat = data.achat;
-                project.schedule.fraisR = data.fraisR;
-                project.schedule.fraisA = data.fraisA;
+                project.schedule.name = data.name;
+                project.schedule.type = data.type;
+                project.schedule.client = data.client;
+                project.schedule.temp = data.temp;
+                project.schedule.kam = data.kam;
+                project.schedule.pm = data.pm;
+                project.schedule.etp = data.etp;
+                project.schedule.country = data.country;
+                project.schedule.stage = data.stage;
+                project.schedule.comments = data.comments;
+                project.schedule.ressource = data.ressource;
+                project.schedule.status = data.status;
+                project.schedule.start_date = startDate;
+                project.schedule.end_date = endDate;
+                project.schedule.charge = data.charge;
+                project.schedule.domaine = data.domaine;
+                project.schedule.ca = data.ca;
                 if(data.parent == "0") {
                     project.schedule.parent = projectId;
                 } else {
@@ -227,7 +258,7 @@ export default {
         })
 
         
-        var scheduleDp = gantt.createDataProcessor({ 
+        gantt.createDataProcessor({ 
             task: {
                 create: function(data) {
                     console.log(data);
@@ -237,8 +268,8 @@ export default {
                     project.schedule = data;
                     if(project.schedule.parent == "0") {
                         project.schedule.parent = projectId;
+                        project.schedule.nestedLevel = 1;
                     }
-                    project.schedule.type = "Activity";
                     project.schedule._id = String(data.id);
                     project.schedule.name = data.text;
                     project.schedule.start_date = formatDate(data.start_date, 'DD-MM-YYYY', 'YYYY-MM-DD[T00:00:00.000Z]');
@@ -258,7 +289,6 @@ export default {
                     if(project.schedule.parent == "0") {
                         project.schedule.parent = projectId;
                     }
-                    project.schedule.type = "Activity";
                     project.schedule._id = String(id);
                     project.schedule.name = data.text;
                     project.schedule.start_date = formatDate(data.start_date, 'DD-MM-YYYY', 'YYYY-MM-DD[T00:00:00.000Z]');
@@ -299,12 +329,18 @@ export default {
             }
         });
 
-        console.log(scheduleDp)
-
         gantt.attachEvent("onBeforeTaskDelete", function(id){
                         var data = {};
                         data.projectId = projectId;
                         data.scheduleId = id;
+                        var childrens = gantt.getChildren(id);
+                        for(const child of childrens) {
+                            var req = {
+                                projectId: projectId,
+                                scheduleId: child
+                            }
+                            ScheduleServices.deleteSchedule(req).then(gantt.message({type:"success", text:"Schedule has been deleted successfully"}));
+                        }
                         ScheduleServices.deleteSchedule(data).then(gantt.message({type:"success", text:"Schedule has been deleted successfully"}));
         });
         gantt.attachEvent("onBeforeLinkDelete", function(id){
@@ -347,6 +383,10 @@ html, body{
     color: #155724;
     background-color: #d4edda;
     border-color: #c3e6cb;
+}
+
+.gantt_grid_head_add:hover {
+    opacity: 1;
 }
 
 .fas {

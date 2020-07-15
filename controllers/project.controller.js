@@ -11,7 +11,7 @@ exports.create = (req, res) => {
   }
   const project = new Project({
     _id: req.body._id,
-    projectName: req.body.projectName,
+    name: req.body.name,
     type: req.body.type,
     client: req.body.client,
     duration: req.body.duration,
@@ -21,9 +21,15 @@ exports.create = (req, res) => {
     parent: req.body.parent,
     progress: req.body.progress,
     charge: req.body.charge,
-    budget: req.body.budget,
-    ssTrt: req.body.ssTrt,
-    link: req.body.link,
+    kam: req.body.kam,
+    pm: req.body.pm,
+    stage: req.body.stage,
+    domaine: req.body.domaine,
+    temp: req.body.temp,
+    etp: req.body.etp,
+    ca: req.body.ca,
+    comments: req.body.comments,
+    country: req.body.country,
   });
 
   // Save Project in the database

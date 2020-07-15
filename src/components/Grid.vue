@@ -69,29 +69,42 @@ export default {
 
         var config = {
                 columns: [
-                    { width: 100, id: 'type',header: [{ text: "Type" },{ content: "inputFilter" }] },
-                    { width: 100, id: 'name',header: [{ text: "name" },{ content: "inputFilter" }] },
+                    { width: 100, id: 'name',header: [{ text: "Designation" },{ content: "inputFilter" }] },
+                    { width: 100, id: 'country',header: [{ text: "Country" },{ content: "inputFilter" }] },
                     { width: 100, id: 'client',header: [{ text: "Client" },{ content: "inputFilter" }] },
+                    { width: 100, id: 'kam',header: [{ text: "KAM" },{ content: "inputFilter" }] },
+                    { width: 100, id: 'pm',header: [{ text: "PM" },{ content: "inputFilter" }] },
+                    { 
+                        width: 160, id: 'stage', 
+                        header: [{ text: "Stage" }, { content: "selectFilter" }], 
+                        editorType: "select", 
+                        options: ["Opportunity", "RFQ/RFI", "BID", "Final Negociation", "Lost", "Abandoned", "Commandes", "Livrée", "Facture", "Suspended"] 
+                    },
+                    { 
+                        width: 160, id: 'temp', 
+                        header: [{ text: "Température" }, { content: "selectFilter" }], 
+                        editorType: "select", 
+                        options: ["Froid", "Moyen", "Chaud"] 
+                    },
+                    { 
+                        width: 160, id: 'domaine', 
+                        header: [{ text: "Domaine" }, { content: "selectFilter" }], 
+                        editorType: "select", 
+                        options: ["Training", "Product & System", "In-Service", "Improvaero"] 
+                    },
+                    { width: 100, id: 'charge',header: [{ text: "Charge" },{ content: "inputFilter" }] },
+                    { width: 100, id: 'ca',header: [{ text: "CA" },{ content: "inputFilter" }] },
+                    { width: 100, id: 'start_date',header: [{ text: "Start Date" },{ content: "inputFilter" }], type: 'date'},
+                    { width: 100, id: 'end_date',header: [{ text: "End Date" },{ content: "inputFilter" }], type: 'date'},
                     { 
                         width: 160, id: 'status', 
                         header: [{ text: "Status" }, { content: "selectFilter" }], 
                         editorType: "select", 
-                        options: ["Done", "In Progress", "Not Started"] 
+                        options: ["Renewal", "Extension", "New Contract"] 
                     },
-                    { width: 100, id: 'contract',header: [{ text: "Contrat" },{ content: "inputFilter" }] },
-                    { width: 100, id: 'start_date',header: [{ text: "Debut" },{ content: "inputFilter" }], type: 'date'},
-                    { width: 100, id: 'end_date',header: [{ text: "\u00c9cheance" },{ content: "inputFilter" }], type: 'date'},
-                    { width: 100, id: 'charge',header: [{ text: "Charge" },{ content: "inputFilter" }] },
-                    { width: 100, id: 'budget',header: [{ text: "Budget" },{ content: "inputFilter" }] },
-                    { width: 100, id: 'exoN',header: [{ text: "EXO N" },{ content: "inputFilter" }] },
+                    { width: 100, id: 'comments',header: [{ text: "Comments" },{ content: "inputFilter" }] },
                     { width: 100, id: 'ressource',header: [{ text: "Ressource" },{ content: "inputFilter" }] },
                     { width: 100, id: 'duration',header: [{ text: "Jours" },{ content: "inputFilter" }]},
-                    { width: 100, id: 'achat',header: [{ text: "Achat" },{ content: "inputFilter" }] },
-                    { width: 100, id: 'itempo',header: [{ text: "Item PO" },{ content: "inputFilter" }] },
-                    { width: 100, id: 'facture',header: [{ text: "Facture" },{ content: "inputFilter" }] },
-                    { width: 100, id: 'ssTrt',header: [{ text: "Fact SS-TRT" },{ content: "inputFilter" }] },
-                    { width: 120, id: 'fraisA',header: [{ text: "Frais Autorisés" },{ content: "inputFilter" }] },
-                    { width: 100, id: 'fraisR',header: [{ text: "Frais Réel" },{ content: "inputFilter" }] },
                 ],
             data: this.dataset,
             selection: "cell",
@@ -118,12 +131,20 @@ export default {
                 project.name = data.name;
                 project.type = data.type;
                 project.client = data.client;
+                project.temp = data.temp;
+                project.kam = data.kam;
+                project.pm = data.pm;
+                project.etp = data.etp;
+                project.country = data.country;
+                project.stage = data.stage;
+                project.comments = data.comments;
+                project.ressource = data.ressource;
                 project.status = data.status;
                 project.start_date = startDate;
                 project.end_date = endDate;
                 project.charge = data.charge;
-                project.budget = data.budget;
-                project.ssTrt = data.ssTrt;
+                project.domaine = data.domaine;
+                project.ca = data.ca;
                 if(status === 'update') {
                     ProjectServices.updateProject(id,project)
                     } else if(status === "add") {
@@ -135,20 +156,23 @@ export default {
                 project._id = data.parent;
                 project.schedule._id = data.id;
                 project.schedule.type = data.type;
+                project.schedule.name = data.name;
+                project.schedule.type = data.type;
+                project.schedule.client = data.client;
+                project.schedule.temp = data.temp;
+                project.schedule.kam = data.kam;
+                project.schedule.pm = data.pm;
+                project.schedule.etp = data.etp;
+                project.schedule.country = data.country;
+                project.schedule.stage = data.stage;
+                project.schedule.comments = data.comments;
+                project.schedule.ressource = data.ressource;
                 project.schedule.status = data.status;
-                project.schedule.parent = data.parent;
-                project.schedule.name = data.name
                 project.schedule.start_date = startDate;
                 project.schedule.end_date = endDate;
-                project.schedule.contract = data.contract;
-                project.schedule.exoN = data.exoN;
-                project.schedule.facture = data.facture;
-                project.schedule.ressource = data.ressource;
-                project.schedule.duration = data.duration;
-                project.schedule.itempo = data.itempo;
-                project.schedule.achat = data.achat;
-                project.schedule.fraisR = data.fraisR;
-                project.schedule.fraisA = data.fraisA;
+                project.schedule.charge = data.charge;
+                project.schedule.domaine = data.domaine;
+                project.schedule.ca = data.ca;
                 if(status === 'update') {
                     ScheduleServices.updateSchedule(id,project)
                 } else if(status === "add") {

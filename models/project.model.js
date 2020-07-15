@@ -2,22 +2,25 @@ module.exports = mongoose => {
     var activitySchema = mongoose.Schema({
         _id: String,
         name: String,
-        contract: String,
+        kam: String,
+        pm: String,
+        stage: String,
+        temp: String,
+        domaine: String,
+        etp: Number,
+        charge: Number,
+        ca: Number,
+        comments: String,
+        country: String,
         type: String,
         parent: String,
         nestedLevel: Number,
         status: String,
         progress: Number,
-        exoN: Number,
-        facture: String,
         start_date: Date,
         end_date: Date,
         ressource: String,
         duration: Number,
-        itempo: String,
-        achat: Number,
-        fraisR: Number,
-        fraisA: Number
     });
 
     var linkSchema = mongoose.Schema({
@@ -29,7 +32,17 @@ module.exports = mongoose => {
 
     var projectSchema = mongoose.Schema({
         _id: String,
-        projectName: String,
+        name: String,
+        country: String,
+        kam: String,
+        pm: String,
+        stage: String,
+        temp: String,
+        domaine: String,
+        etp: Number,
+        charge: Number,
+        ca: Number,
+        comments: String,
         client: String,
         status: String,
         type: String,
@@ -38,9 +51,6 @@ module.exports = mongoose => {
         parent: String,
         progress: Number,
         duration: Number,
-        charge: Number,
-        budget: Number,
-        ssTrt: Number,
         links: [linkSchema],
         schedules: [activitySchema]
     });

@@ -47,18 +47,22 @@ exports.create = (req, res) => {
         "schedules.$.start_date": req.body.schedule.start_date,
         "schedules.$.duration": req.body.schedule.duration,
         "schedules.$.parent": req.body.schedule.parent,
+        "schedules.$.client": req.body.schedule.client,
         "schedules.$.status": req.body.schedule.status,
         "schedules.$.type": req.body.schedule.type,
         "schedules.$.end_date": req.body.schedule.end_date,
         "schedules.$.name": req.body.schedule.name,
         "schedules.$.contract": req.body.schedule.contract,
-        "schedules.$.exoN": req.body.schedule.exoN,
         "schedules.$.ressource": req.body.schedule.ressource,
-        "schedules.$.achat": req.body.schedule.achat,
-        "schedules.$.itempo": req.body.schedule.itempo,
-        "schedules.$.facture": req.body.schedule.facture,
-        "schedules.$.fraisA": req.body.schedule.fraisA,
-        "schedules.$.fraisR": req.body.schedule.fraisR
+        "schedules.$.country": req.body.schedule.country,
+        "schedules.$.kam": req.body.schedule.kam,
+        "schedules.$.pm": req.body.schedule.pm,
+        "schedules.$.stage": req.body.schedule.stage,
+        "schedules.$.etp": req.body.schedule.etp,
+        "schedules.$.domaine": req.body.schedule.domaine,
+        "schedules.$.ca": req.body.schedule.ca,
+        "schedules.$.comments": req.body.schedule.comments,
+        "schedules.$.temp": req.body.schedule.temp,
       },{ useFindAndModify: false }
   )
       .then(data => {

@@ -1,12 +1,17 @@
 export default class Schedule {
     constructor() {
-        this.contract = "Contract";
-        this.exoN = 0;
+        this.client = "Client";
+        this.temp = "Temp";
+        this.kam = "KAM";
+        this.pm = "PM";
+        this.country = "Country";
+        this.etp = 0;
+        this.stage = "Stage";
+        this.comments = "Comments";
         this.ressource = "Ressource";
-        this.achat = 0;
-        this.itempo = 0;
-        this.facture = 0;
-        this.fraisA = 0;
-        this.fraisR = 0;
+        this.status = "Status";
+        this.charge = 0;
+        this.domaine = "Domaine";
+        this.ca = 0;
     }
 }

@@ -135,7 +135,7 @@ export default {
                 dataset.progress = project.progress;
                 dataset.type = project.type;
                 dataset.parent = project.parent;
-                dataset.text = project.projectName;
+                dataset.text = project.name;
                 dataset.start_date = startDate;
                 dataset.end_date = endDate;
                 
@@ -164,12 +164,11 @@ export default {
         gantt.createDataProcessor({ 
             task: {
                 create: function(data) {
-                    console.log(data);
                     if(data.parent == '0'){
                         data.start_date = formatDate(data.start_date, 'DD-MM-YYYY', 'YYYY-MM-DD[T00:00:00.000Z]');
                         data.end_date = formatDate(data.end_date, 'DD-MM-YYYY', 'YYYY-MM-DD[T00:00:00.000Z]');
                         data._id = data.id;
-                        data.projectName = data.text;
+                        data.name = data.text;
                         data.status = "Not Started";
                         delete data.id;
                         delete data.text;
@@ -281,6 +280,14 @@ export default {
                         var data = {};
                         data.projectId = String(task.id);
                         data.scheduleId = id;
+                        var childrens = gantt.getChildren(id);
+                        for(const child of childrens) {
+                            var req = {
+                                projectId: task.id,
+                                scheduleId: child
+                            }
+                            ScheduleServices.deleteSchedule(req).then(gantt.message({type:"success", text:"Schedule has been deleted successfully"}));
+                        }
                         ScheduleServices.deleteSchedule(data).then(gantt.message({type:"success", text:"Schedule has been deleted successfully"}))
                     }
                 }, id)
