@@ -95,6 +95,19 @@ export default {
                 );
             }}
         ];
+
+        gantt.config.lightbox.sections = [
+            {name: "description", height: 70, map_to: "text", type: "textarea"},
+            {name: "type", type: "typeselect", map_to: "type"},
+            {name: "time", height: 72, type: "duration", map_to: "auto"}
+        ];
+        
+        gantt.templates.rightside_text = function(start, end, task){
+            if(task.type == gantt.config.types.milestone){
+                return task.text;
+            }
+        return "";
+    };
         
         Gantt.$doFilter = function(value){
             filterValue = value;

@@ -9,10 +9,10 @@
           </router-link>
         </li>
         <li class="nav-item">
-        <router-link class="nav-link" to="/gantt">Gantt</router-link>
+        <router-link class="nav-link" to="/gantt">Projects Schedule</router-link>
         </li>
         <li class="nav-item">
-          <router-link class="nav-link" to="/grid">Grid</router-link>
+          <router-link class="nav-link" to="/grid">Projects Grid</router-link>
         </li>
         <li v-if="showAdminBoard" class="nav-item">
           <router-link to="/admin" class="nav-link">Admin Board</router-link>
