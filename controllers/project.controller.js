@@ -52,6 +52,11 @@ exports.findAll = (req, res) => {
     var condition = name ? { name: { $regex: new RegExp(name), $options: "i" } } : {};
   
     Project.find(condition)
+      .populate({
+        path: 'schedules.resources',
+        // Get friends of friends - populate the 'friends' array for every friend
+        populate: { path: 'resources' }
+      })
       .then(data => {
         res.send(data);
       })

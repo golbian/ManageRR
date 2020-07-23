@@ -48,7 +48,10 @@ function initial() {
   Role.estimatedDocumentCount((err, count) => {
     if (!err && count === 0) {
       new Role({
-        name: "user"
+        name: "user",
+        readOnly: true,
+        canCreate: false,
+        canUpdate: false,
       }).save(err => {
         if (err) {
           console.log("error", err);
@@ -58,7 +61,10 @@ function initial() {
       });
 
       new Role({
-        name: "moderator"
+        name: "moderator",
+        readOnly: false,
+        canCreate: false,
+        canUpdate: true,
       }).save(err => {
         if (err) {
           console.log("error", err);
@@ -68,7 +74,10 @@ function initial() {
       });
 
       new Role({
-        name: "admin"
+        name: "admin",
+        readOnly: false,
+        canCreate: true,
+        canUpdate: true,
       }).save(err => {
         if (err) {
           console.log("error", err);

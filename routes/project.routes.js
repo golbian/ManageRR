@@ -1,29 +1,30 @@
 const projects = require("../controllers/project.controller.js");
+const { authJwt } = require("../middlewares");
 module.exports = app => {
 
   
     var router = require("express").Router();
   
     // Create a new Project
-    router.post("/", projects.create);
+    router.post("/",[authJwt.verifyToken, authJwt.isAdmin], projects.create);
   
     // Retrieve all Projects
-    router.get("/", projects.findAll);
+    router.get("/", [authJwt.verifyToken], projects.findAll);
   
     // Retrieve all published Projects
-    router.get("/published", projects.findAllPublished);
+    router.get("/published",[authJwt.verifyToken], projects.findAllPublished);
   
     // Retrieve a single Project with id
-    router.get("/:id", projects.findOne);
+    router.get("/:id",[authJwt.verifyToken], projects.findOne);
   
     // Update a Project with id
-    router.put("/:id", projects.update);
+    router.put("/:id",[authJwt.verifyToken, authJwt.isAdmin], projects.update);
   
     // Delete a Project with id
-    router.delete("/:id", projects.delete);
+    router.delete("/:id",[authJwt.verifyToken, authJwt.isAdmin], projects.delete);
   
     // Create a new Project
-    router.delete("/", projects.deleteAll);
+    router.delete("/", [authJwt.verifyToken, authJwt.isAdmin], projects.deleteAll);
   
     app.use('/api/projects', router);
   };

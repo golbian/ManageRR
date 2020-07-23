@@ -53,7 +53,7 @@ exports.create = (req, res) => {
         "schedules.$.end_date": req.body.schedule.end_date,
         "schedules.$.name": req.body.schedule.name,
         "schedules.$.contract": req.body.schedule.contract,
-        "schedules.$.ressource": req.body.schedule.ressource,
+        "schedules.$.resources": req.body.schedule.resources,
         "schedules.$.country": req.body.schedule.country,
         "schedules.$.kam": req.body.schedule.kam,
         "schedules.$.pm": req.body.schedule.pm,

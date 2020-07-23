@@ -8,7 +8,6 @@ export default class Schedule {
         this.etp = 0;
         this.stage = "Stage";
         this.comments = "Comments";
-        this.ressource = "Ressource";
         this.status = "Status";
         this.charge = 0;
         this.domaine = "Domaine";

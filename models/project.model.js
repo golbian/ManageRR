@@ -20,7 +20,12 @@ module.exports = mongoose => {
         progress: Number,
         start_date: Date,
         end_date: Date,
-        ressource: String,
+        resources: [
+            resource_id = {
+              type: mongoose.Schema.Types.ObjectId,
+              ref: "user"
+            },
+          ],
         duration: Number,
     });
 
@@ -58,12 +63,12 @@ module.exports = mongoose => {
 
     projectSchema.virtual('id').get(function(){
       return this._id;
-  });
+    });
 
-  // Ensure virtual fields are serialised.
-  projectSchema.set('toJSON', {
+    // Ensure virtual fields are serialised.
+    projectSchema.set('toJSON', {
       virtuals: true
-  });
+    });
 
 const Project = mongoose.model("project", projectSchema);
     return Project;

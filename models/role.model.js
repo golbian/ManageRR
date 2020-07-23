@@ -1,7 +1,9 @@
 module.exports = mongoose => {
     var Schema = mongoose.Schema({
         name: String,
-        gridInit: Object,
+        readOnly: Boolean,
+        canCreate: Boolean,
+        canUpdate: Boolean,
     });
 
 const Role = mongoose.model("role", Schema);
