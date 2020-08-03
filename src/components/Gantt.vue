@@ -79,6 +79,7 @@ export default {
 		tasks.forEach(function(item) {
 			var assignments = gantt.getResourceAssignments(resource.id, item.id);
 			assignments.forEach(function(assignment){
+                assignment.value = resource.value;
 				var task = gantt.getTask(assignment.task_id);
 				if(resource.type == "work"){
 					result += assignment.value * 1;
@@ -143,9 +144,9 @@ export default {
 					assignments.forEach(function(assignment){
 						var task = gantt.getTask(assignment.task_id);
 						if(resource.type == "work"){
-							result += task.duration * assignment.value;
+							result += task.duration * resource.value;
 						}else{
-							result += assignment.value * 1;
+							result += resource.value * 1;
 						}
 					});
 
@@ -251,29 +252,12 @@ export default {
             data.id = user._id;
             data.text = user.username;
             data.unit = "hours/day";
-            data.default_value = 7;
+            data.value = user.value;
             data.type = "work";
             users.push(data);
         }
         gantt.$resourcesStore.parse(users);
     });
-    
-    // gantt.$resourcesStore.parse([
-	// 	{id: 1, text: "Anna, Architect", unit:"hours/day", default_value:8, type:"work"},
-	// 	{id: 2, text: "Finn, Construction worker", unit:"hours/day", default_value:8, type:"work"},
-	// 	{id: 3, text: "Jake, Construction worker", unit:"hours/day", default_value:8, type:"work"},
-	// 	{id: 4, text: "Floe, Plasterer", unit:"hours/day", default_value:8, type:"work"},
-	// 	{id: 5, text: "Tom, Plumber", unit:"hours/day", default_value:8, type:"work"},
-	// 	{id: 6, text: "Mike, Electrician", unit:"hours/day", default_value:8, type:"work"},
-	// 	{id: 7, text: "Joe, Handyman", unit:"hours/day", default_value:8, type:"work"},
-	// 	{id: 8, text: "Concrete", unit:"m3", default_value:1},
-	// 	{id: 9, text: "Blocks", unit:"m3", default_value:1},
-	// 	{id: 10, text: "Air conditioners", unit:"units", default_value:1},
-	// 	{id: 11, text: "Radiators", unit:"units", default_value:1},
-	// 	{id: 12, text: "Pipes", unit:"meters", default_value:5},
-	// 	{id: 13, text: "Wires", unit:"meters", default_value:10},
-	// 	{id: 14, text: "Paint", unit:"cans%", default_value:1}
-	// ]);
 
         var textFilter = "<input data-text-filter placeholder='Task Name' class='form-control' type='text' oninput='Gantt.$doFilter(this.value)'>"
         var colHeader = '<div class="gantt_grid_head_add" style="border-left: 1px solid #cecece !important;" role="button" aria-label="New task" data-column-id="add" ></div>';
@@ -295,10 +279,9 @@ export default {
 					return "";
 				}
 
-				// if(assignments.length == 1){
-                //     console.log(store.getItem(assignments[0].resource_id))
-				// 	return store.getItem(assignments[0].resource_id).text.split(",")[0];
-				// }
+				if(assignments.length == 1){
+					return store.getItem(assignments[0].resource_id).text.split(",")[0];
+				}
 
 				assignments.forEach(function(assignment) {
 					var resource = store.getItem(assignment.resource_id);

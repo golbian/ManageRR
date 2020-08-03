@@ -9,7 +9,7 @@ module.exports = app => {
 
     //Update schedule in a Project
 
-    router.put("/:id",[authJwt.verifyToken, authJwt.isOwner], schedules.update);
+    router.put("/:id",[authJwt.verifyToken, authJwt.isAdmin], schedules.update);
 
     //Delete a Schedule with id
     router.delete("/", [authJwt.verifyToken, authJwt.isAdmin], schedules.delete)

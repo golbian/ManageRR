@@ -1,6 +1,7 @@
 const db = require("../models");
 const mongoose = require("mongoose");
 const Project = db.project;
+const User = db.user;
 
 exports.create = (req, res) => {
   if (!req.body) {
@@ -66,6 +67,19 @@ exports.create = (req, res) => {
       },{ useFindAndModify: false }
   )
       .then(data => {
+        for(const resource of req.body.schedule.resources) {
+          User.findOneAndUpdate({_id: resource._id},{$set: {value: resource.value}},{ useFindAndModify: false }).then(data => {
+            if(!data) {
+                console.log(`Cannot update User value with id=${resource._id} in schedule(${scheduleId}) for Project with id=${id}`)
+            } else console.log("User value was updated successfully.");
+          })
+          .catch(err => {
+            console.log(err);
+            console.log(
+              "Error updating User value with id=" + resource._id
+            );
+          });
+        }
         if (!data) {
           res.status(404).send({
             message: `Cannot update Schedule with id=${scheduleId} in Project with id=${id}. Maybe Schedule was not found!`
