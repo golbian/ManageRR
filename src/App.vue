@@ -15,10 +15,10 @@
           <router-link class="nav-link" to="/grid">Projects Grid</router-link>
         </li>
         <li v-if="showAdminBoard" class="nav-item">
-          <router-link to="/admin" class="nav-link">Admin Board</router-link>
+          <router-link to="/admin" class="nav-link">Administration</router-link>
         </li>
         <li v-if="showModeratorBoard" class="nav-item">
-          <router-link to="/mod" class="nav-link">Moderator Board</router-link>
+          <router-link to="/mod" class="nav-link">Moderator</router-link>
         </li>
         <li class="nav-item">
           <router-link v-if="currentUser" to="/user" class="nav-link">User</router-link>
@@ -61,25 +61,44 @@
 </template>
 
 <script>
+import UserServices from './services/user.service';
 export default {
+    data() {
+        return {
+          user: null
+        };
+    },
   computed: {
     currentUser() {
       return this.$store.state.auth.user;
     },
     showAdminBoard() {
-      if (this.currentUser && this.currentUser.roles) {
-        return this.currentUser.roles.includes('ROLE_ADMIN');
+      if (this.user && this.user.roles) {
+        for(const role of this.user.roles) {
+          if(role.name == 'admin') {
+            return true;
+          }
+        }
       }
 
       return false;
     },
     showModeratorBoard() {
-      if (this.currentUser && this.currentUser.roles) {
-        return this.currentUser.roles.includes('ROLE_MODERATOR');
+      if (this.user && this.user.roles) {
+        for(const role of this.user.roles) {
+          if(role.name == 'moderator') {
+            return true;
+          }
+        }
       }
 
       return false;
     }
+  },
+    mounted: function() {
+    UserServices.getUser(this.currentUser.id).then(res => {
+      this.user = res.data;
+    })
   },
   methods: {
     logOut() {

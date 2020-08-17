@@ -1,5 +1,6 @@
 const db = require("../models");
 const mongoose = require("mongoose");
+const { project } = require("../models");
 const Project = db.project;
 const User = db.user;
 
@@ -9,8 +10,6 @@ exports.create = (req, res) => {
       message: "Data to update can not be empty!"
     });
   }
-
-  console.log(req.body);
 
   const id = req.body._id;
 
@@ -36,12 +35,10 @@ exports.create = (req, res) => {
         message: "Data to update can not be empty!"
       });
     }
-
-    console.log(req.body);
   
     const id = req.body._id;
-    const scheduleId = req.body.schedule._id
-  
+    const scheduleId = req.body.schedule._id;
+
     Project.findOneAndUpdate(
        {_id: id, "schedules._id": scheduleId},
        {
@@ -65,8 +62,9 @@ exports.create = (req, res) => {
         "schedules.$.comments": req.body.schedule.comments,
         "schedules.$.temp": req.body.schedule.temp,
       },{ useFindAndModify: false }
-  )
+    )
       .then(data => {
+
         for(const resource of req.body.schedule.resources) {
           User.findOneAndUpdate({_id: resource._id},{$set: {value: resource.value}},{ useFindAndModify: false }).then(data => {
             if(!data) {
@@ -96,8 +94,9 @@ exports.create = (req, res) => {
 
   // Delete a Schedule with the specified id in the request
 exports.delete = (req, res) => {
-  const id = req.body.projectId;
-  const scheduleId = req.body.scheduleId;
+  console.log(req.params)
+  const id = req.params.projectId;
+  const scheduleId = req.params.scheduleId
 
   console.log(req.body);
 

@@ -9,6 +9,7 @@ exports.create = (req, res) => {
     res.status(400).send({ message: "Content can not be empty!" });
     return;
   }
+
   const project = new Project({
     _id: req.body._id,
     name: req.body.name,
@@ -30,6 +31,7 @@ exports.create = (req, res) => {
     ca: req.body.ca,
     comments: req.body.comments,
     country: req.body.country,
+    published: req.body.published,
   });
 
   // Save Project in the database
@@ -54,7 +56,6 @@ exports.findAll = (req, res) => {
     Project.find(condition)
       .populate({
         path: 'schedules.resources',
-        // Get friends of friends - populate the 'friends' array for every friend
         populate: { path: 'resources' }
       })
       .then(data => {
@@ -73,6 +74,10 @@ exports.findOne = (req, res) => {
     const id = req.params.id;
   
     Project.findById(id)
+      .populate({
+        path: 'schedules.resources',
+        populate: { path: 'resources' }
+      })
       .then(data => {
         if (!data)
           res.status(404).send({ message: "Not found Project with id " + id });
@@ -92,8 +97,6 @@ exports.update = (req, res) => {
         message: "Data to update can not be empty!"
       });
     }
-
-    console.log(req.body);
   
     const id = req.params.id;
   
@@ -113,10 +116,33 @@ exports.update = (req, res) => {
       });
   };
 
+  exports.attachPM = (req, res) => {
+    const id = req.params.id;
+    if (!req.body) {
+      return res.status(400).send({
+        message: "Data to update can not be empty!"
+      });
+    }
+
+    Project.findByIdAndUpdate(id, {$set: { "pm": req.body.pm ,"published": req.body.published}}, { useFindAndModify: false })
+    .then(data => {
+      if (!data) {
+        res.status(404).send({
+          message: `Cannot update Project Manager in Project with id=${id}. Maybe Project was not found!`
+        });
+      } else res.send({ message: "Project Manager was updated successfully." });
+    })
+    .catch(err => {
+      console.log(err);
+      res.status(500).send({
+        message: "Error updating Project with id=" + id
+      });
+    });
+  }
+
 // Delete a Project with the specified id in the request
 exports.delete = (req, res) => {
     const id = req.params.id;
-    console.log(id)
   
     Project.findOneAndDelete({_id : id}, { useFindAndModify: false })
       .then(data => {
@@ -156,6 +182,29 @@ exports.deleteAll = (req, res) => {
 // Find all published Projects
 exports.findAllPublished = (req, res) => {
     Project.find({ published: true })
+    .populate({
+      path: 'schedules.resources',
+      populate: { path: 'resources' },
+      select: "username"
+    })
+      .then(data => {
+        res.send(data);
+      })
+      .catch(err => {
+        res.status(500).send({
+          message:
+            err.message || "Some error occurred while retrieving projects."
+        });
+      });
+  };
+
+  exports.findAllOwnerProject = (req, res) => {
+    Project.find({ pm: req.params.id })
+    .populate({
+      path: 'schedules.resources',
+      populate: { path: 'resources' },
+      select: "username"
+    })
       .then(data => {
         res.send(data);
       })

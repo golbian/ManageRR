@@ -19,10 +19,10 @@ module.exports = app => {
   );
 
   // Find all users
-  router.get("/", [authJwt.verifyToken, authJwt.isAdmin], users.findAll);
+  router.get("/", [authJwt.verifyToken, authJwt.isModerator], users.findAll);
 
   // Find a single user with id
-  router.get("/:id", [authJwt.verifyToken, authJwt.isAdmin], users.findOne);
+  router.get("/:id", [authJwt.verifyToken], users.findOne);
 
   // Update an User with id
   router.put("/:id",[authJwt.verifyToken, authJwt.isAdmin], users.update);

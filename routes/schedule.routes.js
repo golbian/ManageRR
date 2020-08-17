@@ -9,10 +9,10 @@ module.exports = app => {
 
     //Update schedule in a Project
 
-    router.put("/:id",[authJwt.verifyToken, authJwt.isAdmin], schedules.update);
+    router.put("/:id",[authJwt.verifyToken, authJwt.isModerator], schedules.update);
 
     //Delete a Schedule with id
-    router.delete("/", [authJwt.verifyToken, authJwt.isAdmin], schedules.delete)
+    router.delete("/:projectId/:scheduleId", [authJwt.verifyToken, authJwt.isAdmin], schedules.delete)
   
     app.use('/api/schedule', router);
   };

@@ -4,7 +4,7 @@ import authHeader from './auth-header';
 class scheduleServices {
      
     createSchedule(data){
-      return http.post("/schedule", data, { headers: authHeader()})
+      return http.post(`/schedule`, data, { headers: authHeader()})
     }
 
     updateSchedule(id, data) {
@@ -12,7 +12,7 @@ class scheduleServices {
     }
 
     deleteSchedule(data) {
-      return http.delete(`/schedule`,{data}, { headers: authHeader()});
+      return http.delete(`/schedule/${data.projectId}/${data.scheduleId}`, { headers: authHeader()});
     }
 }
 

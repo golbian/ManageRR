@@ -1,89 +1,39 @@
 <template>
   <div class="container">
     <header class="jumbotron">
-      <button v-on:click="openProjectModal()" class="btn btn-success">Add a project +</button> 
-      <br>
-      <br>
-      <h3>{{content}}</h3>
+      <h1 class='text-center'>Attach a Project Manager to a project</h1>
       <br>
       <ul class="list-group">
         <li v-for="project in listProjects" :key="project.name" class="list-group-item">
-          <a href="#">{{project.name}}</a>
+          <a href="#"  class="d-flex ml-5 px-5 justify-content-between" v-on:click="openManagerModal(project._id)">{{project.name}}
+           <span class="badge badge-primary badge-pill mr-5 px-4">{{project.pm}}</span>
+          </a>
         </li>
       </ul>
     </header>
-    <modal name="newProjectModal" height="auto" :scrollable="true">
-      <form name="form" v-on:submit.prevent="newProject()">
-        <div>
+    <modal name="projectManagerModal" height="auto" :scrollable="true">
+      <form name="form"  style="margin: 5px; padding: 10px;" v-on:submit.prevent="attachPM()">
+        <h2 class="text-center"> Attach project manager: </h2>
           <div class="form-group">
-            <label for="name">Name :</label>
-            <input
-              v-model="project.name"
-              v-validate="'required|min:3|max:20'"
-              type="text"
-              class="form-control"
-              name="name"
-            />
+            <ul>
+              <li v-for="user in listUsers" :key="user.username" class="form-check">
+              <p>
+                <input type="radio" class="form-check-input" v-bind:value="user.username" v-model="projectManager">{{user.username}}
+              </p>
+              </li>
+            </ul>
+            <br>
+            
+            <div style="margin-top: 5px;" class="form-check">
+              <h2 class="text-center"> Publish the project: </h2>
+              <input style="margin-left: 20px;" type="checkbox" class="form-check-input" id="Publish" v-model="isPublished">
+              <label style="margin-left: 40px;" class="form-check-label" for="Publish" v-if="isPublished"> Unpublish </label>
+              <label style="margin-left: 40px;" class="form-check-label" for="Publish" v-if="!isPublished"> Publish </label>
+            </div>
           </div>
           <div class="form-group">
-            <label for="client">Client :</label>
-            <input
-              v-model="project.client"
-              v-validate="'required|min:3|max:20'"
-              type="text"
-              class="form-control"
-              name="client"
-            />
+            <button class="btn btn-primary btn-block">Save</button>
           </div>
-          <div class="form-group">
-            <label for="start">Start Date :</label>
-            <input
-              v-model="project.start"
-              type="date"
-              class="form-control"
-              name="start"
-            />
-          </div>
-          <div class="form-group">
-            <label for="end">End Date :</label>
-            <input
-              v-model="project.end"
-              type="date"
-              class="form-control"
-              name="end"
-            />
-          </div>
-          <div class="form-group">
-            <label for="charge">Charge :</label>
-            <input
-              v-model="project.charge"
-              type="number"
-              class="form-control"
-              name="charge"
-            />
-          </div>
-          <div class="form-group">
-            <label for="budget">Budget :</label>
-            <input
-              v-model="project.budget"
-              type="number"
-              class="form-control"
-              name="budget"
-            />
-          </div>
-          <div class="form-group">
-            <label for="ssTrt">ssTrt :</label>
-            <input
-              v-model="project.ssTrt"
-              type="number"
-              class="form-control"
-              name="ssTrt"
-            />
-          </div>
-          <div class="form-group">
-            <button class="btn btn-primary btn-block">Add Project</button>
-          </div>
-        </div>
       </form>
     </modal>
   </div>
@@ -97,18 +47,11 @@ export default {
   name: 'User',
   data() {
     return {
-      content: '',
       listProjects: [],
-      project: {      
-        name: null,
-        client: null,
-        statut: null,
-        start: null,
-        end: null,
-        charge: null,
-        budget: null,
-        ssTrt: null,
-      },
+      listUsers: [],
+      projectManager: null,
+      projectId: null,
+      isPublished: false,
     };
   },
   mounted() {
@@ -124,32 +67,28 @@ export default {
       }
     );
 
-    ProjectServices.getAllProject().then(response =>{
+    ProjectServices.getAllProject().then(response => {
       this.listProjects = response.data;
+      console.log(response.data)
     })
 
-
+    UserService.getAllUser().then(response => {
+      this.listUsers = response.data;
+    })
   },
   methods: {
-    openProjectModal() {
-      this.$modal.show('newProjectModal');
-      document.querySelector('.vm--modal').style.padding = '10px';
+    openManagerModal(id) {
+      this.projectId = id;
+      this.$modal.show('projectManagerModal');
     },
 
-    newProject() {
+    attachPM() {
       var data = {};
-      data.name = this.project.name;
-      data.client = this.project.client;
-      data.statut = 'Default';
-      data.start = this.project.start;
-      data.end = this.project.end;
-      data.charge = this.project.charge;
-      data.budget = this.project.budget;
-      data.ssTrt = this.project.ssTrt;
-      
-      ProjectServices.createProject(data).then(response =>{
+      data.pm = this.projectManager;
+      data.published = this.isPublished;
+      ProjectServices.attachProjectManager(this.projectId, data).then(response => {
         console.log(response)
-      }).catch(err =>{
+      }).catch(err => {
         console.error(err);
       })
     }
@@ -169,7 +108,8 @@ export default {
     -moz-appearance: textfield;
   }
 
-  .vm--modal {
+  div.vm--modal {
+    margin: 5px;
     padding: 10px;
   }
 </style>

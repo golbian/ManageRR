@@ -13,7 +13,7 @@ module.exports = app => {
     router.put("/:id",[authJwt.verifyToken, authJwt.isAdmin], links.update);
 
     //Delete a Schedule with id
-    router.delete("/",[authJwt.verifyToken, authJwt.isAdmin], links.delete);
+    router.delete("/:projectId/LinkId",[authJwt.verifyToken, authJwt.isAdmin], links.delete);
   
     app.use('/api/link', router);
   };

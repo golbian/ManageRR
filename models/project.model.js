@@ -41,7 +41,10 @@ module.exports = mongoose => {
         name: String,
         country: String,
         kam: String,
-        pm: String,
+        pm : {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "user"
+        },
         stage: String,
         temp: String,
         domaine: String,
@@ -57,12 +60,9 @@ module.exports = mongoose => {
         parent: String,
         progress: Number,
         duration: Number,
+        published: Boolean,
         links: [linkSchema],
         schedules: [activitySchema]
-    });
-
-    projectSchema.virtual('id').get(function(){
-      return this._id;
     });
 
     // Ensure virtual fields are serialised.

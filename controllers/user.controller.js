@@ -23,7 +23,7 @@ exports.findAll = (req, res) => {
   const name = req.query.name;
   var condition = name ? { name: { $regex: new RegExp(name), $options: "i" } } : {};
 
-  User.find(condition)
+  User.find(condition).select("-password -email")
     .then(data => {
       res.send(data);
     })
@@ -40,6 +40,10 @@ exports.findOne = (req, res) => {
   const id = req.params.id;
 
   User.findById(id)
+    .populate({
+      path: 'roles',
+      populate: { path: 'users.roles' }
+    })
     .then(data => {
       if (!data)
         res.status(404).send({ message: "Not found User with id " + id });

@@ -4,16 +4,28 @@ import authHeader from './auth-header';
 class projectServices {
 
     getAllProject() {
-    return http.get("/projects",{ headers: authHeader() });
+      return http.get("/projects",{ headers: authHeader() });
+    }
+
+    getAllPublishedProject() {
+      return http.get("/projects/published",{ headers: authHeader() });
+    }
+
+    getAllOwnerProject(id) {
+      return http.get(`/projects/pm/${id}`,{ headers: authHeader() });
     }
 
     getProject(id) {
-        return http.get(`/projects/${id}`,{ headers: authHeader() });
+      return http.get(`/projects/${id}`,{ headers: authHeader() });
       }
 
     createProject(data) {
       return http.post("/projects", data, { headers: authHeader()});
      }
+
+    attachProjectManager(id, data) {
+      return http.put(`/projects/pm/${id}`, data, {headers: authHeader()});
+    }
 
     updateProject(id, data) {
       return http.put(`/projects/${id}`, data, { headers: authHeader()});
@@ -25,10 +37,6 @@ class projectServices {
 
     deleteAllProject() {
       return http.delete(`/projects`,{ headers: authHeader() });
-    }
-
-    findProjectByName(name) {
-      return http.get(`/projects?name=${name}`,{ headers: authHeader() });
     }
 }
 

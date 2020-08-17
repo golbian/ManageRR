@@ -92,24 +92,20 @@ exports.signin = (req, res) => {
         expiresIn: 86400 // 24 hours
       });
 
-      var authorities = [];
+      // var authorities = [];
 
       Role.find({
         '_id': { $in: 
             user.roles
         }
-        },  function(err, docs){
-         for (const doc of docs) {
-          authorities.push("ROLE_" + doc.name.toUpperCase());
-         }
-
+        },  function(){
          res.status(200).send({
           id: user._id,
           username: user.username,
           email: user.email,
-          roles: authorities,
+          roles: user.roles,
           accessToken: token
         });
-      });
+      })
     });
 };

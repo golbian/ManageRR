@@ -35,8 +35,6 @@ exports.create = (req, res) => {
         message: "Data to update can not be empty!"
       });
     }
-
-    console.log(req.body);
   
     const id = req.body._id;
     const linkId = req.body.link._id
@@ -66,10 +64,8 @@ exports.create = (req, res) => {
 
   // Delete a Link with the specified id in the request
 exports.delete = (req, res) => {
-  const id = req.body.projectId;
-  const linkId = req.body.linkId;
-
-  console.log(req.body);
+  const id = req.params.projectId;
+  const linkId = req.params.linkId;
 
   Project.findOneAndUpdate({_id: id }, { $pull: {links:{_id : linkId}}},{ useFindAndModify: false })
     .then(data => {
