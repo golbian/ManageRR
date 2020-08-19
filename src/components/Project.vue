@@ -71,6 +71,7 @@ export default {
                     { width: 100, id: 'comments',header: [{ text: "Comments" },{ content: "inputFilter" }] },
                     { width: 100, id: 'ressource',header: [{ text: "Ressource" },{ content: "inputFilter" }] },
                     { width: 100, id: 'duration',header: [{ text: "Jours" },{ content: "inputFilter" }]},
+                    { hidden: true, id: 'progress',header: [{ text: "Progress" }]},
                 ],
                 data: this.gridData,
                 selection: "cell",
@@ -506,6 +507,7 @@ export default {
                 project.schedule.name = data.name;
                 project.schedule.type = data.type;
                 project.schedule.client = data.client;
+                project.schedule.progress = data.progress;
                 project.schedule.temp = data.temp;
                 project.schedule.kam = data.kam;
                 project.schedule.pm = data.pm;
@@ -520,6 +522,7 @@ export default {
                 project.schedule.charge = data.charge;
                 project.schedule.domaine = data.domaine;
                 project.schedule.ca = data.ca;
+                console.log(data)
                 if(data.parent == "0") {
                     project.schedule.parent = projectId;
                 } else {
