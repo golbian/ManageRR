@@ -15,8 +15,8 @@ class projectServices {
       return http.get(`/projects/pm/${id}`,{ headers: authHeader() });
     }
 
-    getProject(id) {
-      return http.get(`/projects/${id}`,{ headers: authHeader() });
+    async getProject(id) {
+        return http.get(`/projects/${id}`,{ headers: authHeader() });
       }
 
     createProject(data) {

@@ -273,9 +273,27 @@ export default {
             gantt.attachEvent("onParse", function(){
                 gantt.render();
             });
-            gantt.$resourcesStore.parse(users);
 
-            gantt.config.columns = [
+            gantt.$resourcesStore.parse(users);
+        }
+	
+    UserServices.getAllUser().then(res => {
+        for(const user of res.data) {
+            var data = {};
+            data.id = user._id;
+            data.text = user.username;
+            data.unit = "hours/day";
+            data.value = user.value;
+            data.type = "work";
+            this.resources.push(data);
+        }
+        resourcesInit(this.resources);
+    });
+
+        var textFilter = "<input data-text-filter placeholder='Task Name' class='form-control' type='text' oninput='Gantt.$doFilter(this.value)'>"
+        var colHeader = '<div class="gantt_grid_head_add" style="border-left: 1px solid #cecece !important;" role="button" aria-label="New task" data-column-id="add" ></div>';
+
+        gantt.config.columns = [
                 {name: "text", label: textFilter, tree: true, width: 120, resize: true},
                 {name: "start_date", align: "center", resize: true},
                 {name: "resources", align: "center", width: 80, label: "Resources", resize: true,
@@ -323,23 +341,6 @@ export default {
                     }
                 }}
             ];
-        }
-	
-    UserServices.getAllUser().then(res => {
-        for(const user of res.data) {
-            var data = {};
-            data.id = user._id;
-            data.text = user.username;
-            data.unit = "hours/day";
-            data.value = user.value;
-            data.type = "work";
-            this.resources.push(data);
-        }
-        resourcesInit(this.resources);
-    });
-
-        var textFilter = "<input data-text-filter placeholder='Task Name' class='form-control' type='text' oninput='Gantt.$doFilter(this.value)'>"
-        var colHeader = '<div class="gantt_grid_head_add" style="border-left: 1px solid #cecece !important;" role="button" aria-label="New task" data-column-id="add" ></div>';
 
         var filterValue = "";
         Gantt.$doFilter = function(value){

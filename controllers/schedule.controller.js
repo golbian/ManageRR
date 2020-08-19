@@ -47,7 +47,8 @@ exports.create = (req, res) => {
         "schedules.$.parent": req.body.schedule.parent,
         "schedules.$.client": req.body.schedule.client,
         "schedules.$.status": req.body.schedule.status,
-        "schedules.$.type": req.body.schedule.type,
+        "schedules.$.type": req.body.schedule.type, 
+        "schedules.$.progress": req.body.schedule.progress,
         "schedules.$.end_date": req.body.schedule.end_date,
         "schedules.$.name": req.body.schedule.name,
         "schedules.$.contract": req.body.schedule.contract,
@@ -64,7 +65,6 @@ exports.create = (req, res) => {
       },{ useFindAndModify: false }
     )
       .then(data => {
-
         for(const resource of req.body.schedule.resources) {
           User.findOneAndUpdate({_id: resource._id},{$set: {value: resource.value}},{ useFindAndModify: false }).then(data => {
             if(!data) {
