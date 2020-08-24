@@ -1,9 +1,19 @@
 module.exports = mongoose => {
+
+    // var resourceSchema = mongoose.Schema({
+    //   _id: String,
+    //   resource_id: String,
+    //   value: Number,
+    // });
+
     var activitySchema = mongoose.Schema({
         _id: String,
         name: String,
         kam: String,
-        pm: String,
+        pm: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "user"
+        },
         client: String,
         stage: String,
         temp: String,

@@ -44,14 +44,17 @@ export default {
                     data.id = data._id;
                     data.start_date = formatDate(data.start_date, 'YYYY-MM-DD[T00:00:00.000Z]', 'DD-MM-YYYY');
                     data.end_date = formatDate(data.end_date, 'YYYY-MM-DD[T00:00:00.000Z]', 'DD-MM-YYYY');
+                    if(data.pm) {
+                        data.pm = data.pm.username
+                    }
                     this.dataset.push(data);
                 
-                    for(const activity of data.schedules) {
-                        activity.projectId = data._id;
-                        activity.id = activity._id;
-                        activity.start_date = formatDate(activity.start_date, 'YYYY-MM-DD[T00:00:00.000Z]', 'DD-MM-YYYY');
-                        activity.end_date = formatDate(activity.end_date, 'YYYY-MM-DD[T00:00:00.000Z]', 'DD-MM-YYYY');
-                        this.dataset.push(activity)
+                    for(const schedule of data.schedules) {
+                        schedule.projectId = data._id;
+                        schedule.id = schedule._id;
+                        schedule.start_date = formatDate(schedule.start_date, 'YYYY-MM-DD[T00:00:00.000Z]', 'DD-MM-YYYY');
+                        schedule.end_date = formatDate(schedule.end_date, 'YYYY-MM-DD[T00:00:00.000Z]', 'DD-MM-YYYY');
+                        this.dataset.push(schedule)
                     }
                 }
                 this.grid.data.parse(this.dataset);
@@ -105,12 +108,15 @@ export default {
                     { width: 100, id: 'comments',header: [{ text: "Comments" },{ content: "inputFilter" }] },
                     { width: 100, id: 'ressource',header: [{ text: "Ressource" },{ content: "inputFilter" }] },
                     { width: 100, id: 'duration',header: [{ text: "Jours" },{ content: "inputFilter" }]},
+                    { hidden: true, id: 'progress',header: [{ text: "Progress" }]},
+                    { hidden: true, id: 'parent',header: [{ text: "Parent" }]},
                 ],
-            data: this.dataset,
-            selection: "cell",
-            editable: true,
-            keyNavigation: true
-        };
+                data: this.gridData,
+                selection: "cell",
+                editable: true,
+                autoWidth: true,
+                keyNavigation: true
+            };
 
         this.grid = new GridDHX(this.$refs.container, config);
 
@@ -126,19 +132,18 @@ export default {
 
 
             if(data.type === "project") {
-                console.log(data);
                 project._id = data.id;
                 project.name = data.name;
                 project.type = data.type;
                 project.client = data.client;
                 project.temp = data.temp;
                 project.kam = data.kam;
-                project.pm = data.pm;
+                project.pm = data.pm.username;
                 project.etp = data.etp;
                 project.country = data.country;
                 project.stage = data.stage;
                 project.comments = data.comments;
-                project.ressource = data.ressource;
+                project.resource = data.ressource;
                 project.status = data.status;
                 project.start_date = startDate;
                 project.end_date = endDate;
@@ -152,29 +157,31 @@ export default {
                     }
             
             } else if(data.type === "task") {
-                console.log(data);
                 project._id = data.parent;
-                project.schedule._id = data.id;
-                project.schedule.type = data.type;
+                project.schedule = {};
+                project.schedule._id = id;
+                project.schedule.start_date = startDate;
+                project.schedule.end_date = endDate;
+                project.schedule.parent = data.parent;
+                project.schedule.duration = data.jours;
                 project.schedule.name = data.name;
                 project.schedule.type = data.type;
                 project.schedule.client = data.client;
+                project.schedule.progress = data.progress;
                 project.schedule.temp = data.temp;
                 project.schedule.kam = data.kam;
-                project.schedule.pm = data.pm;
+                project.schedule.pm = "None";
                 project.schedule.etp = data.etp;
                 project.schedule.country = data.country;
                 project.schedule.stage = data.stage;
                 project.schedule.comments = data.comments;
-                project.schedule.ressource = data.ressource;
+                project.schedule.resources = data.resources;
                 project.schedule.status = data.status;
-                project.schedule.start_date = startDate;
-                project.schedule.end_date = endDate;
                 project.schedule.charge = data.charge;
                 project.schedule.domaine = data.domaine;
                 project.schedule.ca = data.ca;
                 if(status === 'update') {
-                    ScheduleServices.updateSchedule(id,project)
+                    ScheduleServices.updateSchedule(project._id,project)
                 } else if(status === "add") {
                     ScheduleServices.createSchedule(project)
                 }

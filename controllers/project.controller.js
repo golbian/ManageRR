@@ -58,6 +58,11 @@ exports.findAll = (req, res) => {
         path: 'schedules.resources',
         populate: { path: 'resources' }
       })
+      .populate({
+        path: 'pm',
+        select: "-password",
+        populate: { path: 'pm' }
+      })
       .then(data => {
         res.send(data);
       })

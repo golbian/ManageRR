@@ -553,6 +553,8 @@ export default {
                     project.schedule.name = data.text;
                     project.schedule.start_date = formatDate(data.start_date, 'DD-MM-YYYY', 'YYYY-MM-DD[T00:00:00.000Z]');
                     project.schedule.end_date = formatDate(data.end_date, 'DD-MM-YYYY', 'YYYY-MM-DD[T00:00:00.000Z]');
+                    
+                    console.log(project.schedule.resources)
                     delete project.schedule.id;
                     delete project.schedule.text;
                     delete project.schedule["!nativeeditor_status"];

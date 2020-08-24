@@ -6,7 +6,7 @@
       <ul class="list-group">
         <li v-for="project in listProjects" :key="project.name" class="list-group-item">
           <a href="#"  class="d-flex ml-5 px-5 justify-content-between" v-on:click="openManagerModal(project._id)">{{project.name}}
-           <span class="badge badge-primary badge-pill mr-5 px-4">{{project.pm}}</span>
+           <span v-if="project.pm" class="badge badge-primary badge-pill mr-5 px-4">{{project.pm.username}}</span>
           </a>
         </li>
       </ul>
@@ -18,7 +18,7 @@
             <ul>
               <li v-for="user in listUsers" :key="user.username" class="form-check">
               <p>
-                <input type="radio" class="form-check-input" v-bind:value="user.username" v-model="projectManager">{{user.username}}
+                <input type="radio" class="form-check-input" v-bind:value="user._id" v-model="projectManager">{{user.username}}
               </p>
               </li>
             </ul>

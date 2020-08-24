@@ -150,7 +150,7 @@ export default {
             gantt.locale.labels.section_resources = "Resources";
             gantt.config.lightbox.project_sections = [
                 {name: "description", height: 38, map_to: "text", type: "textarea", focus: true},
-                {name: "resources", type: "radio", map_to: "resources", options: gantt.serverList("people")},
+                {name: "resources", type: "select", map_to: "resources", options: gantt.serverList("people")},
                 {name: "time", type: "duration", map_to: "auto"}
             ];
 
