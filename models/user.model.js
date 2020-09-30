@@ -9,6 +9,13 @@ module.exports = mongoose => {
         type: mongoose.Schema.Types.ObjectId,
         ref: "role"
       }
+    ],
+    projects: [
+      {
+        _id: String,
+        type: String,
+        ref: "project"
+      }
     ]
   }, 
   { timestamps: true }

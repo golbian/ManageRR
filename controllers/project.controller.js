@@ -54,25 +54,31 @@ exports.findAll = (req, res) => {
     var condition = name ? { name: { $regex: new RegExp(name), $options: "i" } } : {};
   
     Project.find(condition)
-      .populate({
-        path: 'schedules.resources',
-        populate: { path: 'resources' }
+.then(() => {
+        return Project.aggregate([
+          {
+            $addFields:
+          {
+            charge: { $sum: "$schedules.charge" },
+          }
+        }]).exec(function(err, doc) {
+          Project.populate(doc , {
+            path: 'schedules.resources',
+            populate: { path: 'resources' }
+          }, 
+          function(err, data) {
+            if(!err) {
+              res.send(data);
+            } else {
+              res.status(500).send({
+                message:
+                  err.message || "Some error occurred while retrieving projects."
+              });
+            }
+          });
       })
-      .populate({
-        path: 'pm',
-        select: "-password",
-        populate: { path: 'pm' }
-      })
-      .then(data => {
-        res.send(data);
-      })
-      .catch(err => {
-        res.status(500).send({
-          message:
-            err.message || "Some error occurred while retrieving projects."
-        });
-      });
-  };
+  });
+};
 
 // Find a single Project with an id
 exports.findOne = (req, res) => {
@@ -86,7 +92,9 @@ exports.findOne = (req, res) => {
       .then(data => {
         if (!data)
           res.status(404).send({ message: "Not found Project with id " + id });
-        else res.send(data);
+        else {
+          res.send(data);
+        }
       })
       .catch(err => {
         res
@@ -136,6 +144,11 @@ exports.update = (req, res) => {
           message: `Cannot update Project Manager in Project with id=${id}. Maybe Project was not found!`
         });
       } else res.send({ message: "Project Manager was updated successfully." });
+      var charges = [];
+      
+      for(const charge of data.schedules) {
+        charges.push(charge);
+      }
     })
     .catch(err => {
       console.log(err);

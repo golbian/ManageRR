@@ -14,8 +14,14 @@
         <li class="nav-item">
           <router-link class="nav-link" to="/grid">Projects Grid</router-link>
         </li>
+        <li class="nav-item">
+          <router-link class="nav-link" to="/scheduler">Scheduler</router-link>
+        </li>
         <li v-if="showAdminBoard" class="nav-item">
           <router-link to="/admin" class="nav-link">Administration</router-link>
+        </li>
+        <li v-if="showAdminBoard" class="nav-item">
+          <router-link to="/import" class="nav-link">Import</router-link>
         </li>
         <li v-if="showModeratorBoard" class="nav-item">
           <router-link to="/mod" class="nav-link">Moderator</router-link>

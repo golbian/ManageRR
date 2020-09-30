@@ -26,6 +26,9 @@ module.exports = app => {
 
   // Update an User with id
   router.put("/:id",[authJwt.verifyToken, authJwt.isAdmin], users.update);
+
+  // Delete a project with projectId in User with id
+  router.delete("/project/:id", [authJwt.verifyToken, authJwt.isAdmin], users.deleteProject);
   
   // Delete an User with id
   router.delete("/:id",[authJwt.verifyToken, authJwt.isAdmin], users.delete);

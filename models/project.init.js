@@ -8,7 +8,6 @@ export default class Project {
         this.stage = "Stage";
         this.comments = "Comments";
         this.status = "Status";
-        this.charge = 0;
         this.domaine = "Domaine";
         this.ca = 0;
     }

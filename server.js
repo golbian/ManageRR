@@ -1,6 +1,8 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
+const multer =  require('multer');
+const upload = multer( { dest : '/api/upload' } );
 
 const app = express();
 
@@ -42,7 +44,9 @@ require("./routes/auth.routes")(app);
 require('./routes/user.routes')(app);
 require('./routes/project.routes')(app);
 require('./routes/schedule.routes')(app);
+require('./routes/event.routes')(app);
 require('./routes/link.routes')(app);
+require('./routes/import.routes')(app);
 
 function initial() {
   Role.estimatedDocumentCount((err, count) => {

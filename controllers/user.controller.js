@@ -68,6 +68,7 @@ exports.update = (req, res) => {
 
   User.findByIdAndUpdate(id, req.body, { useFindAndModify: false })
     .then(data => {
+      console.log(data)
       if (!data) {
         res.status(404).send({
           message: `Cannot update User with id=${id}. Maybe User was not found!`
@@ -81,6 +82,28 @@ exports.update = (req, res) => {
       });
     });
 };
+
+exports.deleteProject = (req,res) => {
+  const id = req.params.id;
+
+  User.find().update({_id: id}, {$pull: {projects:{_id : id}}},{ useFindAndModify: false })
+    .then(data => {
+      if (!data) {
+        res.status(404).send({
+          message: `Cannot delete Project with project id =${projectId} in User with id=${id}. Maybe User or project was not found!`
+        });
+      } else {
+        res.send({
+          message: "Project with project id = "+ projectId +"in User with id="+ id +" was deleted successfully!"
+        });
+      }
+    })
+    .catch(err => {
+      res.status(500).send({
+        message: "Could not delete Project with project id= "+ projectId + " in User with id=" + id
+      });
+    });
+}
 
 // Delete a User with the specified id in the request
 exports.delete = (req, res) => {

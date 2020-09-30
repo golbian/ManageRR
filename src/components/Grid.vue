@@ -1,8 +1,5 @@
 <template>
 <div ref="container" id='container' class="widget-box">
-<button v-on:click="saveGrid()" class="btn btn-success">Save</button>
-<button v-on:click="addProject()" class="btn btn-success">Project +</button>
-<button v-on:click="clearGrid()" class="btn btn-success">Clear</button>
 </div>
 </template>
 
@@ -58,6 +55,7 @@ export default {
                     }
                 }
                 this.grid.data.parse(this.dataset);
+                console.log(this.dataset)
             });
 
 
@@ -111,7 +109,7 @@ export default {
                     { hidden: true, id: 'progress',header: [{ text: "Progress" }]},
                     { hidden: true, id: 'parent',header: [{ text: "Parent" }]},
                 ],
-                data: this.gridData,
+                // data: this.gridData,
                 selection: "cell",
                 editable: true,
                 autoWidth: true,
@@ -134,7 +132,7 @@ export default {
             if(data.type === "project") {
                 project._id = data.id;
                 project.name = data.name;
-                project.type = data.type;
+                // project.type = data.type;
                 project.client = data.client;
                 project.temp = data.temp;
                 project.kam = data.kam;
@@ -165,7 +163,7 @@ export default {
                 project.schedule.parent = data.parent;
                 project.schedule.duration = data.jours;
                 project.schedule.name = data.name;
-                project.schedule.type = data.type;
+                // project.schedule.type = data.type;
                 project.schedule.client = data.client;
                 project.schedule.progress = data.progress;
                 project.schedule.temp = data.temp;
@@ -175,7 +173,7 @@ export default {
                 project.schedule.country = data.country;
                 project.schedule.stage = data.stage;
                 project.schedule.comments = data.comments;
-                project.schedule.resources = data.resources;
+                // project.schedule.resources = data.resources;
                 project.schedule.status = data.status;
                 project.schedule.charge = data.charge;
                 project.schedule.domaine = data.domaine;

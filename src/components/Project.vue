@@ -542,6 +542,7 @@ export default {
             task: {
                 create: function(data) {
                     var project = {};
+                    var resourceTab = [];
                     project.schedule = {};
                     project._id = projectId;
                     project.schedule = data;
@@ -553,8 +554,10 @@ export default {
                     project.schedule.name = data.text;
                     project.schedule.start_date = formatDate(data.start_date, 'DD-MM-YYYY', 'YYYY-MM-DD[T00:00:00.000Z]');
                     project.schedule.end_date = formatDate(data.end_date, 'DD-MM-YYYY', 'YYYY-MM-DD[T00:00:00.000Z]');
-                    
-                    console.log(project.schedule.resources)
+                    for(var resource of project.schedule.resources) {
+                        resourceTab.push(resource.resource_id)
+                    }
+                    project.schedule.resources = resourceTab;
                     delete project.schedule.id;
                     delete project.schedule.text;
                     delete project.schedule["!nativeeditor_status"];
@@ -581,8 +584,8 @@ export default {
                     var initScheduleData = new Schedule;
                     Object.assign(project.schedule, initScheduleData);
                     for(const resource of project.schedule.resources) {
-                                    resource._id = resource.resource_id;
-                                }
+                        resource._id = resource.resource_id;
+                    }
                     ScheduleServices.updateSchedule(project._id, project).then(gantt.message({type:"success", text:"Schedule has been updated successfully"}));
                 },
                 delete: function(id) {

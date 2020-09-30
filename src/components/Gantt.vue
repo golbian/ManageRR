@@ -36,17 +36,6 @@ export default {
 
         var router = this.$router;
 
-        UserServices.getUser(this.currentUser.id).then(res => {
-            for(const role of res.data.roles) {
-                this.roles.push(role);
-                if(role.readOnly === false) {
-                    gantt.config.readonly = false;
-                }
-            }
-        }).catch(err => {
-            console.log(err)
-        })
-
         const gantt = Gantt.getGanttInstance({
             plugins:{
                 click_drag: true,
@@ -65,6 +54,17 @@ export default {
                 readonly : true
             },
         });
+
+        UserServices.getUser(this.currentUser.id).then(res => {
+            for(const role of res.data.roles) {
+                this.roles.push(role);
+                if(role.readOnly === false) {
+                    gantt.config.readonly = false;
+                }
+            }
+        }).catch(err => {
+            console.log(err)
+        })
 
         var resourcesInit = function(users) {
             gantt.templates.grid_row_class = function(start, end, task){
@@ -297,35 +297,45 @@ export default {
                 {name: "text", label: textFilter, tree: true, width: 120, resize: true},
                 {name: "start_date", align: "center", resize: true},
                 {name: "resources", align: "center", width: 80, label: "Resources", resize: true,
-                template: function (task) {
-                    if (task.type == gantt.config.types.project) {
-                        return "";
+                    template: function (task) {
+                        // if (task.type == gantt.config.types.project) {
+                        //     return "";
+                        // }
+
+                        var result = "";
+                        var store = gantt.getDatastore("resource");
+                        var assignments = task[gantt.config.resource_property];
+
+                        if (!assignments || !assignments.length) {
+                            return "";
+                        }
+
+                        // if(assignments.length == 1){
+                        // 	return store.getItem(assignments[0].resource_id).text.split(",")[0];
+                        // }
+
+                        assignments.forEach(function(assignment) {
+                            var resource = store.getItem(assignment.resource_id);
+                            if (!resource)
+                                return;
+                            result += "<div class='owner-label' title='" + resource.text + "'>" + resource.text.substr(0, 1) + "</div>";
+                        });
+                        return result;
                     }
-
-                    var result = "";
-                    var store = gantt.getDatastore("resource");
-                    var assignments = task[gantt.config.resource_property];
-
-                    if (!assignments || !assignments.length) {
-                        return "";
-                    }
-
-                    // if(assignments.length == 1){
-                    // 	return store.getItem(assignments[0].resource_id).text.split(",")[0];
-                    // }
-
-                    assignments.forEach(function(assignment) {
-                        var resource = store.getItem(assignment.resource_id);
-                        if (!resource)
-                            return;
-                        result += "<div class='owner-label' title='" + resource.text + "'>" + resource.text.substr(0, 1) + "</div>";
-
-                    });
-                    gantt.render();
-                    return result;
-                }
-            },
+                },
                 {name: "duration", width: 80, align: "center", resize: true},
+                {name: "charge", width: 80, align: "center", resize: true, label: "Charge",
+                    template: function(task) {
+                        
+                        if (task.type == gantt.config.types.project) {
+                            console.log(task.charge)
+                            // return "";
+                        }
+                        var result = "";
+                            result += "<div class='charge-label' title='" + task.charge + "'>" + task.charge + "</div>";
+                            return result;
+                    }
+                },
                 {name: "buttons",label: colHeader,width: 80,template: function (task) {
                     if(task.parent == "0") {
                         return (
@@ -415,6 +425,7 @@ export default {
                 dataset.type = project.type;
                 dataset.parent = project.parent;
                 dataset.text = project.name;
+                dataset.charge = project.charge;
                 dataset.start_date = startDate;
                 dataset.end_date = endDate;
                 
@@ -548,6 +559,7 @@ export default {
                                 nestedLevel ++;
                                 if(task.parent == '0') {
                                     var project = {};
+                                    var resourceTab = [];
                                     project.schedule = {};
                                     project._id = String(task.id);
                                     project.schedule = data;
@@ -557,6 +569,10 @@ export default {
                                     project.schedule.name = data.text;
                                     project.schedule.start_date = formatDate(data.start_date, 'DD-MM-YYYY', 'YYYY-MM-DD[T00:00:00.000Z]');
                                     project.schedule.end_date = formatDate(data.end_date, 'DD-MM-YYYY', 'YYYY-MM-DD[T00:00:00.000Z]');
+                                    for(var resource of project.schedule.resources) {
+                                        resourceTab.push(resource.resource_id)
+                                    }
+                                    project.schedule.resources = resourceTab;
                                     delete project.schedule.id;
                                     delete project.schedule.text;
                                     delete project.schedule["!nativeeditor_status"];
@@ -581,6 +597,7 @@ export default {
                         data.end_date = formatDate(data.end_date, 'DD-MM-YYYY', 'YYYY-MM-DD[T00:00:00.000Z]');
                         data.projectName = data.text;
                         data.pm = data.resources;
+                        console.log(data)
                         delete data.text;
                         delete data["!nativeeditor_status"];
                         ProjectServices.updateProject(id,data).then(success => {
@@ -607,8 +624,6 @@ export default {
                                 delete project.schedule.id;
                                 delete project.schedule.text;
                                 delete project.schedule["!nativeeditor_status"];
-                                var initScheduleData = new Schedule;
-                                Object.assign(project.schedule, initScheduleData);
                                 for(const resource of project.schedule.resources) {
                                     resource._id = resource.resource_id;
                                 }
@@ -683,6 +698,7 @@ export default {
         gantt.attachEvent("onBeforeTaskDelete", function(id, item){
             if(item.parent == '0') {
                 ProjectServices.deleteProject(id).then(gantt.message({type:"success", text:"Project has been deleted successfully"}))
+                UserServices.deleteProject(id).then(gantt.message({type:"success", text:"Project has been deleted successfully from Users"}))
             } else {
                 gantt.eachParent(function(task){
                     if(task.parent == '0') {

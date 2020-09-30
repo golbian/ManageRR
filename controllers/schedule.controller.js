@@ -15,6 +15,7 @@ exports.create = (req, res) => {
 
   Project.findByIdAndUpdate({_id: id}, {$push: { schedules: req.body.schedule}}, { useFindAndModify: false })
     .then(data => {
+      console.log(data);
       if (!data) {
         res.status(404).send({
           message: `Cannot create Schedule. Maybe Project was not found!`
@@ -28,6 +29,29 @@ exports.create = (req, res) => {
       });
     });
 };
+
+exports.findOne = (req, res) => {
+  const id = req.params.projectId;
+  const scheduleId = req.params.scheduleId;
+  if(!req.body) {
+    return res.status(400).send({
+      message: "Data to update can not be empty!"
+    });
+  }
+  Project.findOne({_id: id, "schedules._id": scheduleId},{ 'schedules.$._id': scheduleId })
+  .then(data => {
+    if (!data)
+      res.status(404).send({ message: "Not found Schedule with id " + id });
+    else {
+      res.send(data);
+    }
+  })
+  .catch(err => {
+    res
+      .status(500)
+      .send({ message: "Error retrieving Schedule with id=" + id });
+  });
+}
 
   exports.update = (req, res) => {
     if (!req.body) {
@@ -55,7 +79,8 @@ exports.create = (req, res) => {
         "schedules.$.resources": req.body.schedule.resources,
         "schedules.$.country": req.body.schedule.country,
         "schedules.$.kam": req.body.schedule.kam,
-        "schedules.$.pm": req.body.schedule.pm,
+        "schedules.$.charge": req.body.schedule.charge,
+        // "schedules.$.pm": req.body.schedule.pm,
         "schedules.$.stage": req.body.schedule.stage,
         "schedules.$.etp": req.body.schedule.etp,
         "schedules.$.domaine": req.body.schedule.domaine,
@@ -65,18 +90,20 @@ exports.create = (req, res) => {
       },{ useFindAndModify: false }
     )
       .then(data => {
-        for(const resource of req.body.schedule.resources) {
-          User.findOneAndUpdate({_id: resource._id},{$set: {value: resource.value}},{ useFindAndModify: false }).then(data => {
-            if(!data) {
-                console.log(`Cannot update User value with id=${resource._id} in schedule(${scheduleId}) for Project with id=${id}`)
-            } else console.log("User value was updated successfully.");
-          })
-          .catch(err => {
-            console.log(err);
-            console.log(
-              "Error updating User value with id=" + resource._id
-            );
-          });
+        if(req.body.isAdmin) {
+          for(const resource of req.body.schedule.resources) {
+            User.findOneAndUpdate({_id: resource._id},{$set: { value: resource.value }, $addToSet: { projects: id }},{ useFindAndModify: false }).then(data => {
+              if(!data) {
+                  console.log(`Cannot update User value with id=${resource._id} in schedule(${scheduleId}) for Project with id=${id}`)
+              } else console.log("User value was updated successfully.");
+            })
+            .catch(err => {
+              console.log(err);
+              console.log(
+                "Error updating User value with id=" + resource._id
+              );
+            });
+          }
         }
         if (!data) {
           res.status(404).send({
@@ -96,7 +123,7 @@ exports.create = (req, res) => {
 exports.delete = (req, res) => {
   console.log(req.params)
   const id = req.params.projectId;
-  const scheduleId = req.params.scheduleId
+  const scheduleId = req.params.scheduleId;
 
   console.log(req.body);
 

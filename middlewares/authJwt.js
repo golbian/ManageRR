@@ -39,6 +39,7 @@ isAdmin = (req, res, next) => {
 
         for (let i = 0; i < roles.length; i++) {
           if (roles[i].name === "admin") {
+            req.body.isAdmin = true;
             next();
             return;
           }
@@ -70,7 +71,7 @@ isModerator = (req, res, next) => {
 
         for (let i = 0; i < roles.length; i++) {
           if (roles[i].name === "moderator") {
-            req.body.user = user;
+            req.body.isModerator = true;
             next();
             return;
           }

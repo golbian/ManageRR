@@ -26,8 +26,12 @@ class UserService {
     return http.put(`/users/${id}`, data, { headers: authHeader()});
   }
 
+  deleteProject(id) {
+    return http.delete(`/users/project/${id}`, { headers: authHeader()});
+  }
+
   deleteUser(id) {
-    return http.delete(`/users/${id}`,{ headers: authHeader() });
+    return http.delete(`/users/${id}`,{ headers: authHeader()});
   }
 }
 

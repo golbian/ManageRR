@@ -19,7 +19,6 @@ module.exports = mongoose => {
         temp: String,
         domaine: String,
         etp: Number,
-        charge: Number,
         ca: Number,
         comments: String,
         country: String,
@@ -59,7 +58,6 @@ module.exports = mongoose => {
         temp: String,
         domaine: String,
         etp: Number,
-        charge: Number,
         ca: Number,
         comments: String,
         client: String,
@@ -79,6 +77,10 @@ module.exports = mongoose => {
     projectSchema.set('toJSON', {
       virtuals: true
     });
+
+    // activitySchema.virtual('resource_id').get(function(){
+    //   return this.resource._id;
+    // });
 
 const Project = mongoose.model("project", projectSchema);
     return Project;
