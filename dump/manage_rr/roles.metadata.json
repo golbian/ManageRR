@@ -1,1 +1,0 @@
-{"options":{},"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_","ns":"manage_rr.roles"}],"uuid":"1fe536f5f33346b598331b1689dc0d86"}
