@@ -1,79 +1,127 @@
 const db = require("../models");
 const mongoose = require("mongoose");
-var XLSX = require('xlsx');
+const csv = require('csvtojson');
 const Project = db.project;
+const moment =  require("moment");
 // const mongodb = require("mongodb").MongoClient;
 
 exports.upload =  (req, res) => {
   if (req.file == undefined) {
     return res.status(400).send({ message: "Please upload a file!" });
   }
-  
-  // let url = "mongodb://localhost:27017/";
 
+  csv({
+    trim: true,
+    // ignoreEmpty: true,
+    delimiter: ","
+  })
+  .fromFile(req.file.path)
+  .then((file)=>{
+    var projects = [];
+  // var schedules = [];
+  var parentWbs;
 
-  var workbook = XLSX.readFile(req.file.path, {cellDates: true});
-  var sheet_name_list = workbook.SheetNames;
-  var first_worksheet = workbook.Sheets[sheet_name_list[0]];
-  
-  var file = XLSX.utils.sheet_to_json(first_worksheet, {header:1});
-
-  let projects = [];
+  var pushToProject = function(parentWbs, schedule) {
+    for(const project of projects) {
+      if(project.wbs === parentWbs) {
+        schedule.parent = project._id;
+        project.schedules.push(schedule);
+      }
+    }
+  }
 
   for( const item of file ) {
     var data = {
-      designation: item[1],
-      country: item[2],
-      client: item[3],
-      date: item[4],
-      kam: item[5],
-      pm:item[6],
-      stage: item[7],
-      modif: item[8],
-      temp: item[9],
-      domaine: item[10],
-      offre: item[11],
-      cmde: item[12],
-      facture: item[13],
-      id_facture: item[14],
-      etp: item[15],
-      charge: item[16],
-      ca: item[17],
-      debours: item[18],
-      start_date: item[19],
-      end_date: item[20],
-      end_date_revised: item[21],
-      status: item[23],
-      duration: item[25]
+      wbs: item["REF"],
+      name: item["Designation"],
+      country: item["Country"],
+      client: item["Client"],
+      kam: item["KAM"],
+      pm: item["PM"],
+      stage: item["STAGE"],
+      temp: item["T°"],
+      domain: item["Domain"],
+      offre: item["OFFRE"],
+      cmde: item["CMDE"],
+      facture: item["FACTURE"],
+      idFacture: item["idFACTURE"],
+      etp: item["ETP"],
+      charge: item[" CHARGE "],
+      ca: item["CA"],
+      debours: item["DEBOURS"],
+      start_date: item["Start Date"],
+      end_date: item["End Date (initial)"],
+      end_date_revised: item["End Date (revised)"],
+      tpelig: item["TPELIG"],
+      status: item["Status"],
+      comments: item["Comments"],
+      duration: item["Durée (mois)"],
     }
 
+    data.start_date = moment(data.start_date, '').format('YYYY-MM-DD[T00:00:00.000Z]');
+    data.end_date = moment(data.end_date, '').format('YYYY-MM-DD[T00:00:00.000Z]');
+    data.end_date_revised = moment(data.end_date_revised, '').format('YYYY-MM-DD[T00:00:00.000Z]');
 
     for(var i in data) {
       if(data[i] == undefined) {
         data[i] = "";
       }
+        var wbs = data.wbs + "";
+        // data._id = wbs;
+        var parts = wbs.split(".");
+        parts.pop();
+        data.parent = parts.join(".");
     }
-    
-    projects.push(data);
-    
+
+    if(data.wbs) {
+      if(data.parent == '') {
+        data._id = new mongoose.mongo.ObjectId();
+        parentWbs = data.wbs
+        data.type = 'project'
+        data.schedules = []
+        projects.push(data)
+      } else {
+        data.nestedLevel = 1;
+        data.type = 'task';
+        pushToProject(parentWbs, data)
+      }
+    }
   }
 
-  var doc = projects.slice(3);
-  mongodb.connect(
-    url,
-    { useNewUrlParser: true, useUnifiedTopology: true },
-    (err, client) => {
-      if (err) throw err;
-  
-        client
-        .db("test")
-        .collection("projects")
-        .insertMany(doc, (err, res) => {
-          if (err) throw err;
-  
-          console.log(`Inserted: ${res.insertedCount} rows`);
-          client.close();
-        });
-    }
-  );
+  // for(const project of projects) {
+  //   if(project.charge !== "TBD" || project.charge !== "") {
+  //     project.charge = parseInt(project.charge)
+  //   } else {
+  //     project.charge = 0;
+  //   }
+  //   if(project.charge === null) {
+  //     project.charge = 0;
+  //   }
+  //   for(const schedule of project.schedules) {
+  //     if (schedule) {
+  //       if(schedule.charge !== "TBD" || schedule.charge !== "") {
+  //         schedule.charge = parseInt(schedule.charge)
+  //       } else {
+  //         schedule.charge = 0;
+  //       }
+  //       if(schedule.charge === null) {
+  //         schedule.charge = 0;
+  //       }
+  //     }
+  //   }
+  // }
+
+  // Save Project in the database
+  Project
+    .insertMany(projects)
+    .then(data => {
+      res.send(data);
+    })
+    .catch(err => {
+      res.status(500).send({
+        message:
+          err.message || "Some error occurred while creating the Project state."
+      })
+    })
+  })
 };

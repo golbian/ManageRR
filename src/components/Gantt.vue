@@ -1,10 +1,12 @@
 <template>
-<div ref="container" class="widget-box"></div>
+<div ref="container" class="widget-box">
+</div>
 </template>
 
  
 <script>
 import {Gantt} from 'dhtmlx-gantt';
+import {Layout as LayoutDHX } from 'dhx-suite';
 import ProjectServices from '../services/project.service';
 import ScheduleServices from '../services/schedule.service';
 import LinkServices from '../services/link.service';
@@ -15,6 +17,7 @@ import Project from '../../models/project.init';
 export default {
     data() {
         return {
+            scales: [],
             roles: [],
             resources: [],
             tasks: {
@@ -192,18 +195,18 @@ export default {
             };
 
             gantt.config.scales = [
-                {unit: "month", step: 1, format: "%F, %Y"},
-                {unit: "day", step: 1, format: "%d %M"}
+                {unit: "month", step: 1, format: "%M, %Y"},
+                // {unit: "day", step: 1, format: "%d %M"}
             ];
-            gantt.config.reorder_grid_columns = true;
-            gantt.config.auto_scheduling = true;
-            gantt.config.auto_scheduling_strict = true;
+            // gantt.config.autosize = "y";
+            gantt.config.fit_tasks = true;
+            gantt.config.smart_scales = true;
             gantt.config.work_time = true;
             gantt.config.resource_store = "resource";
             gantt.config.resource_property = "resources";
             gantt.config.order_branch = true;
             gantt.config.open_tree_initially = true;
-            gantt.config.scale_height = 50;
+            gantt.config.scale_height = 30;
             gantt.config.layout = {
                 css: "gantt_container",
                 rows: [
@@ -327,10 +330,8 @@ export default {
                 {name: "charge", width: 80, align: "center", resize: true, label: "Charge",
                     template: function(task) {
                         
-                        if (task.type == gantt.config.types.project) {
-                            console.log(task.charge)
-                            // return "";
-                        }
+                        // if (task.type == gantt.config.types.project) {
+                        // }
                         var result = "";
                             result += "<div class='charge-label' title='" + task.charge + "'>" + task.charge + "</div>";
                             return result;
@@ -373,6 +374,19 @@ export default {
         return "";
     };
 
+    gantt.attachEvent("onGanttScroll", function (left, top){
+        var pos = gantt.getScrollState();
+        var start_date = gantt.dateFromPos(pos.x);
+        var end_date = gantt.dateFromPos(pos.x + pos.inner_width)
+        var tasks_visible = gantt.getTaskByTime(start_date, end_date)
+        for(const task of tasks_visible) {
+            gantt.templates.task_class = function(start, end, task){
+                var css = ""
+                return css += "task_text_visible";
+            }
+        }
+    });
+
 	gantt.attachEvent("onBeforeTaskDisplay", function(id, task){
     if(!filterValue) return true;
 
@@ -413,31 +427,62 @@ export default {
 		return true;
 	});
 
-        ProjectServices.getAllProject().then(response => {
-
-            for(const project of response.data) {
+    var processData = (projects) => {
+        for(const project of projects) {
                 var dataset = {};
-                var startDate = formatDate(project.start_date, 'YYYY-MM-DD[T00:00:00.000Z]', 'DD-MM-YYYY');
-                var endDate = formatDate(project.end_date, 'YYYY-MM-DD[T00:00:00.000Z]', 'DD-MM-YYYY');
-
+                if(project.end_date_revised !== "") {
+                    if(!moment(project.end_date_revised).isValid()) {
+                        var endDate = formatDate(project.end_date, 'YYYY-MM-DD[T00:00:00.000Z]', 'DD-MM-YYYY');
+                    } else {
+                        var endDate = formatDate(project.end_date_revised, 'YYYY-MM-DD[T00:00:00.000Z]', 'DD-MM-YYYY');
+                    }
+                } else {
+                    var endDate = formatDate(project.end_date, 'YYYY-MM-DD[T00:00:00.000Z]', 'DD-MM-YYYY');
+                }
+                
+                if(!moment(project.start_date).isValid()) {
+                    var startDate = moment().format('DD-MM-YYYY');
+                } else {
+                    var startDate = formatDate(project.start_date, 'YYYY-MM-DD[T00:00:00.000Z]', 'DD-MM-YYYY');
+                }
                 dataset.id = project._id;
                 dataset.progress = project.progress;
-                dataset.type = project.type;
+                if(project.type !== "project") {
+                    dataset.type = project.type;
+                } else {
+                    dataset.color = '#34c461'
+                }
+                // dataset.type = project.type;
                 dataset.parent = project.parent;
                 dataset.text = project.name;
+                dataset.duration = project.duration
                 dataset.charge = project.charge;
                 dataset.start_date = startDate;
                 dataset.end_date = endDate;
                 
                 for(const schedule of project.schedules) {
                     if(schedule) {
-                    var scheduleStartDate = formatDate(schedule.start_date, 'YYYY-MM-DD[T00:00:00.000Z]', 'DD-MM-YYYY');
-                    var scheduleEndDate = formatDate(schedule.end_date, 'YYYY-MM-DD[T00:00:00.000Z]', 'DD-MM-YYYY');
-                    schedule.id = schedule._id;
-                    schedule.start_date = scheduleStartDate;
-                    schedule.end_date = scheduleEndDate;
-                    schedule.text = schedule.name;
-                    this.tasks.data.push(schedule);
+                        if(schedule.end_date_revised !== "") {
+                            if(!moment(schedule.end_date_revised).isValid()) {
+                                var scheduleEndDate = formatDate(schedule.end_date, 'YYYY-MM-DD[T00:00:00.000Z]', 'DD-MM-YYYY');
+                            } else {
+                                var scheduleEndDate = formatDate(schedule.end_date_revised, 'YYYY-MM-DD[T00:00:00.000Z]', 'DD-MM-YYYY');
+                            }
+                        } else {
+                            var scheduleEndDate = formatDate(schedule.end_date, 'YYYY-MM-DD[T00:00:00.000Z]', 'DD-MM-YYYY');
+                        }
+                        
+                        if(!moment(schedule.start_date).isValid()) {
+                            var scheduleStartDate = moment().format('DD-MM-YYYY');
+                        } else {
+                            var scheduleStartDate = formatDate(schedule.start_date, 'YYYY-MM-DD[T00:00:00.000Z]', 'DD-MM-YYYY');
+                        }
+                   
+                        schedule.id = schedule._id;
+                        schedule.start_date = scheduleStartDate;
+                        schedule.end_date = scheduleEndDate;
+                        schedule.text = schedule.name;
+                        this.tasks.data.push(schedule);
                     }
                 }
                 for(const link of project.links){
@@ -449,7 +494,58 @@ export default {
             }
             gantt.init(this.$refs.container);
             gantt.parse(this.tasks);
-        }).catch(err => {
+    }
+
+        ProjectServices.getAllProject().then(response => {
+            processData(response.data);
+
+            // for(const project of response.data) {
+            //     var dataset = {};
+            //     if(project.start_date == "") {
+            //         var startDate = formatDate(new Date, 'YYYY-MM-DD[T00:00:00.000Z]', 'DD-MM-YYYY');
+            //         var endDate = formatDate(new Date, 'YYYY-MM-DD[T00:00:00.000Z]', 'DD-MM-YYYY');;
+            //     } else {
+            //         var startDate = formatDate(project.start_date, 'YYYY-MM-DD[T00:00:00.000Z]', 'DD-MM-YYYY');
+            //         var endDate = formatDate(project.end_date, 'YYYY-MM-DD[T00:00:00.000Z]', 'DD-MM-YYYY');
+            //     }
+            //     dataset.id = project._id;
+            //     dataset.progress = project.progress;
+            //     dataset.type = project.type;
+            //     dataset.parent = project.parent;
+            //     dataset.text = project.name;
+            //     dataset.charge = project.charge;
+            //     dataset.start_date = startDate;
+            //     dataset.end_date = endDate;
+                
+            //     for(const schedule of project.schedules) {
+            //         if(schedule) {
+            //             if(schedule.start_date == "") {
+            //                 var scheduleStartDate = formatDate(new Date, 'YYYY-MM-DD[T00:00:00.000Z]', 'DD-MM-YYYY');
+            //                 var scheduleEndDate = formatDate(new Date, 'YYYY-MM-DD[T00:00:00.000Z]', 'DD-MM-YYYY');;
+            //             } else {
+            //                 var scheduleStartDate = formatDate(schedule.start_date, 'YYYY-MM-DD[T00:00:00.000Z]', 'DD-MM-YYYY');
+            //                 var scheduleEndDate = formatDate(schedule.end_date, 'YYYY-MM-DD[T00:00:00.000Z]', 'DD-MM-YYYY');
+            //             }
+                   
+            //             schedule.id = schedule._id;
+            //             schedule.start_date = scheduleStartDate;
+            //             schedule.end_date = scheduleEndDate;
+            //             schedule.text = schedule.name;
+            //             this.tasks.data.push(schedule);
+            //         }
+            //     }
+            //     for(const link of project.links){
+            //         link.id = link._id;
+            //         delete link._id;
+            //         this.tasks.links.push(link);
+            //     }
+            //     this.tasks.data.push(dataset);
+
+            //     console.log(this.tasks)
+            // }
+            // gantt.init(this.$refs.container);
+            // gantt.parse(this.tasks);
+        })/*.catch(err => {
             if(err) {
 
                 ProjectServices.getAllOwnerProject(this.currentUser.id).then(response => {
@@ -526,15 +622,16 @@ export default {
                     gantt.parse(this.tasks);
                 })
             }
-        });
-        
+        });*/ 
+
         gantt.createDataProcessor({ 
             task: {
                 create: function(data) {
-                    if(data.parent == '0'){
+                    console.log(data)
+                    if(data.parent == '0' || data.parent == ""){
                         data.start_date = formatDate(data.start_date, 'DD-MM-YYYY', 'YYYY-MM-DD[T00:00:00.000Z]');
                         data.end_date = formatDate(data.end_date, 'DD-MM-YYYY', 'YYYY-MM-DD[T00:00:00.000Z]');
-                        data._id = data.id;
+                        data.end_date_revised = null;
                         data.name = data.text;
                         data.type = "project";
                         data.published = false;
@@ -557,7 +654,7 @@ export default {
                             var nestedLevel = 0;
                             gantt.eachParent(function(task){
                                 nestedLevel ++;
-                                if(task.parent == '0') {
+                                if(task.parent == '0' || task.parent == "") {
                                     var project = {};
                                     var resourceTab = [];
                                     project.schedule = {};
@@ -565,10 +662,11 @@ export default {
                                     project.schedule = data;
                                     project.schedule.nestedLevel = nestedLevel;
                                     project.schedule.type = data.type;
-                                    project.schedule._id = String(data.id);
                                     project.schedule.name = data.text;
+                                    // project.schedule.parent = ;
                                     project.schedule.start_date = formatDate(data.start_date, 'DD-MM-YYYY', 'YYYY-MM-DD[T00:00:00.000Z]');
                                     project.schedule.end_date = formatDate(data.end_date, 'DD-MM-YYYY', 'YYYY-MM-DD[T00:00:00.000Z]');
+                                    project.schedule.end_date_revised = null;
                                     for(var resource of project.schedule.resources) {
                                         resourceTab.push(resource.resource_id)
                                     }
@@ -578,6 +676,7 @@ export default {
                                     delete project.schedule["!nativeeditor_status"];
                                     var initScheduleData = new Schedule;
                                     Object.assign(project.schedule, initScheduleData);
+                                    console.log(project.schedule)
                                     ScheduleServices.createSchedule(project).then(success => {
                                     if(success) {
                                         gantt.message({type:"success", text:"Task has been created successfully"})
@@ -786,6 +885,14 @@ div.gantt_cal_ltext label input[type=radio] {
 	height:100vh;
 }
 
+.task_text_visible > .gantt_task_content {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: center !important;
+    text-align: center !important;
+}
+
 .gantt_grid_scale .gantt_grid_head_cell,
 .gantt_task .gantt_task_scale .gantt_scale_cell {
 	font-weight: bold;
@@ -801,7 +908,6 @@ div.gantt_cal_ltext label input[type=radio] {
 	height: 28px;
 	line-height: 29px;
 	display: inline-block;
-
 	color: #FFF;
 	margin: 3px;
 }

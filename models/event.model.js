@@ -4,17 +4,18 @@ module.exports = mongoose => {
         _id: String,
         name:String,
         client: String,
-        projects: [
-            {
-              _id: String,
-              type: String,
-              ref: "project"
-            }
-        ],
+        // projects: [
+        //     {
+        //       _id: String,
+        //       type: String,
+        //       ref: "project"
+        //     }
+        // ],
         deliverable: String,
         project_id: String,
         schedule_id: String,
         activityName: String,
+        projectName: String,
         start_date:String,
         end_date: String,
         tps: Number,
@@ -23,6 +24,6 @@ module.exports = mongoose => {
         },
         { timestamps: true }
     );
-    const Pointing = mongoose.model("pointing", eventSchema);
+    const Pointing = mongoose.model("event", eventSchema);
         return Pointing;
       };

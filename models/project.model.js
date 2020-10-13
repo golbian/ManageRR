@@ -7,28 +7,30 @@ module.exports = mongoose => {
     // });
 
     var activitySchema = mongoose.Schema({
-        _id: String,
         name: String,
         kam: String,
         pm: {
-          type: mongoose.Schema.Types.ObjectId,
+          type: mongoose.Schema.Types.Mixed,
           ref: "user"
         },
         client: String,
         stage: String,
         temp: String,
         domaine: String,
-        etp: Number,
-        ca: Number,
+        etp: mongoose.Schema.Types.Mixed,
+        charge: mongoose.Schema.Types.Mixed,
+        ca: mongoose.Schema.Types.Mixed,
         comments: String,
         country: String,
         type: String,
         parent: String,
+        parentWbs: String,
         nestedLevel: Number,
         status: String,
         progress: Number,
-        start_date: Date,
-        end_date: Date,
+        start_date: mongoose.Schema.Types.Mixed,
+        end_date: mongoose.Schema.Types.Mixed,
+        end_date_revised: mongoose.Schema.Types.Mixed,
         resources: [
             resource_id = {
               type: mongoose.Schema.Types.ObjectId,
@@ -46,28 +48,30 @@ module.exports = mongoose => {
     });    
 
     var projectSchema = mongoose.Schema({
-        _id: String,
+        wbs: String,
         name: String,
         country: String,
         kam: String,
         pm : {
-          type: mongoose.Schema.Types.ObjectId,
+          type: mongoose.Schema.Types.Mixed || mongoose.Schema.Types.ObjectId,
           ref: "user"
         },
         stage: String,
         temp: String,
         domaine: String,
-        etp: Number,
-        ca: Number,
+        charge: mongoose.Schema.Types.Mixed,
+        etp: mongoose.Schema.Types.Mixed,
+        ca: mongoose.Schema.Types.Mixed,
         comments: String,
         client: String,
         status: String,
         type: String,
-        start_date: Date,
-        end_date: Date,
+        start_date: mongoose.Schema.Types.Mixed,
+        end_date: mongoose.Schema.Types.Mixed,
+        end_date_revised: mongoose.Schema.Types.Mixed,
         parent: String,
         progress: Number,
-        duration: Number,
+        duration: mongoose.Schema.Types.Mixed,
         published: Boolean,
         links: [linkSchema],
         schedules: [activitySchema]

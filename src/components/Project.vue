@@ -1,5 +1,6 @@
 <template>
 <div ref="container" class="widget-box">
+    <div id="layout"></div>
     <div id="gantt_container"></div>
     <div id="grid_container"></div>
 </div>
@@ -7,6 +8,7 @@
 <script>
 import {Gantt} from 'dhtmlx-gantt';
 import { Grid as GridDHX} from "dhx-grid";
+import {Layout as LayoutDHX } from 'dhx-suite';
 import "dhx-grid/codebase/grid.min.css";
 import moment from 'moment';
 import ProjectServices from '../services/project.service';
@@ -19,7 +21,7 @@ export default {
     data() {
         return {
             grid: {},
-            gridData: [],
+            gridData: null,
             roles: [],
             resources: [],
             tasks: {
@@ -32,54 +34,54 @@ export default {
         currentUser() {
             return this.$store.state.auth.user;
         },
-        config(){
-            return  {
-                columns: [
-                    { width: 100, id: 'name',header: [{ text: "Designation" },{ content: "inputFilter" }] },
-                    { width: 100, id: 'country',header: [{ text: "Country" },{ content: "inputFilter" }] },
-                    { width: 100, id: 'client',header: [{ text: "Client" },{ content: "inputFilter" }] },
-                    { width: 100, id: 'kam',header: [{ text: "KAM" },{ content: "inputFilter" }] },
-                    { width: 100, id: 'pm',header: [{ text: "PM" },{ content: "inputFilter" }] },
-                    { 
-                        width: 160, id: 'stage', 
-                        header: [{ text: "Stage" }, { content: "selectFilter" }], 
-                        editorType: "select", 
-                        options: ["Opportunity", "RFQ/RFI", "BID", "Final Negociation", "Lost", "Abandoned", "Commandes", "Livrée", "Facture", "Suspended"] 
-                    },
-                    { 
-                        width: 160, id: 'temp', 
-                        header: [{ text: "Température" }, { content: "selectFilter" }], 
-                        editorType: "select", 
-                        options: ["Froid", "Moyen", "Chaud"] 
-                    },
-                    { 
-                        width: 160, id: 'domaine', 
-                        header: [{ text: "Domaine" }, { content: "selectFilter" }], 
-                        editorType: "select", 
-                        options: ["Training", "Product & System", "In-Service", "Improvaero"] 
-                    },
-                    { width: 100, id: 'charge',header: [{ text: "Charge" },{ content: "inputFilter" }] },
-                    { width: 100, id: 'ca',header: [{ text: "CA" },{ content: "inputFilter" }] },
-                    { width: 100, id: 'start_date',header: [{ text: "Start Date" },{ content: "inputFilter" }], type: 'date'},
-                    { width: 100, id: 'end_date',header: [{ text: "End Date" },{ content: "inputFilter" }], type: 'date'},
-                    { 
-                        width: 160, id: 'status', 
-                        header: [{ text: "Status" }, { content: "selectFilter" }], 
-                        editorType: "select", 
-                        options: ["Renewal", "Extension", "New Contract"] 
-                    },
-                    { width: 100, id: 'comments',header: [{ text: "Comments" },{ content: "inputFilter" }] },
-                    { width: 100, id: 'ressource',header: [{ text: "Ressource" },{ content: "inputFilter" }] },
-                    { width: 100, id: 'duration',header: [{ text: "Jours" },{ content: "inputFilter" }]},
-                    { hidden: true, id: 'progress',header: [{ text: "Progress" }]},
-                ],
-                data: this.gridData,
-                selection: "cell",
-                editable: true,
-                autoWidth: true,
-                keyNavigation: true
-            };
-        }
+        // config(){
+        //     return  {
+        //         columns: [
+        //             { width: 100, id: 'name',header: [{ text: "Designation" },{ content: "inputFilter" }] },
+        //             { width: 100, id: 'country',header: [{ text: "Country" },{ content: "inputFilter" }] },
+        //             { width: 100, id: 'client',header: [{ text: "Client" },{ content: "inputFilter" }] },
+        //             { width: 100, id: 'kam',header: [{ text: "KAM" },{ content: "inputFilter" }] },
+        //             { width: 100, id: 'pm',header: [{ text: "PM" },{ content: "inputFilter" }] },
+        //             { 
+        //                 width: 160, id: 'stage', 
+        //                 header: [{ text: "Stage" }, { content: "selectFilter" }], 
+        //                 editorType: "select", 
+        //                 options: ["Opportunity", "RFQ/RFI", "BID", "Final Negociation", "Lost", "Abandoned", "Commandes", "Livrée", "Facture", "Suspended"] 
+        //             },
+        //             { 
+        //                 width: 160, id: 'temp', 
+        //                 header: [{ text: "Température" }, { content: "selectFilter" }], 
+        //                 editorType: "select", 
+        //                 options: ["Froid", "Moyen", "Chaud"] 
+        //             },
+        //             { 
+        //                 width: 160, id: 'domaine', 
+        //                 header: [{ text: "Domaine" }, { content: "selectFilter" }], 
+        //                 editorType: "select", 
+        //                 options: ["Training", "Product & System", "In-Service", "Improvaero"] 
+        //             },
+        //             { width: 100, id: 'charge',header: [{ text: "Charge" },{ content: "inputFilter" }] },
+        //             { width: 100, id: 'ca',header: [{ text: "CA" },{ content: "inputFilter" }] },
+        //             { width: 100, id: 'start_date',header: [{ text: "Start Date" },{ content: "inputFilter" }], type: 'date'},
+        //             { width: 100, id: 'end_date',header: [{ text: "End Date" },{ content: "inputFilter" }], type: 'date'},
+        //             { 
+        //                 width: 160, id: 'status', 
+        //                 header: [{ text: "Status" }, { content: "selectFilter" }], 
+        //                 editorType: "select", 
+        //                 options: ["Renewal", "Extension", "New Contract"] 
+        //             },
+        //             { width: 100, id: 'comments',header: [{ text: "Comments" },{ content: "inputFilter" }] },
+        //             { width: 100, id: 'ressource',header: [{ text: "Ressource" },{ content: "inputFilter" }] },
+        //             { width: 100, id: 'duration',header: [{ text: "Jours" },{ content: "inputFilter" }]},
+        //             { hidden: true, id: 'progress',header: [{ text: "Progress" }]},
+        //         ],
+        //         data: this.gridData,
+        //         selection: "cell",
+        //         editable: true,
+        //         autoWidth: true,
+        //         keyNavigation: true
+        //     };
+        // }
     },
     created(){
         var projectId = this.$route.params.id
@@ -262,8 +264,8 @@ export default {
             };
 
             gantt.config.scales = [
-                {unit: "month", step: 1, format: "%F, %Y"},
-                {unit: "day", step: 1, format: "%d %M"}
+                {unit: "month", step: 1, format: "%M, %Y"},
+                // {unit: "day", step: 1, format: "%d %M"}
             ];
             gantt.config.reorder_grid_columns = true;
             gantt.config.auto_scheduling = true;
@@ -490,7 +492,54 @@ export default {
             gantt.init("gantt_container")
             gantt.parse(this.tasks);
 
-            this.grid = new GridDHX("grid_container", this.config);
+            var config = {
+                columns: [
+                    { width: 100, id: 'name',header: [{ text: "Designation" },{ content: "inputFilter" }] },
+                    { width: 100, id: 'country',header: [{ text: "Country" },{ content: "inputFilter" }] },
+                    { width: 100, id: 'client',header: [{ text: "Client" },{ content: "inputFilter" }] },
+                    { width: 100, id: 'kam',header: [{ text: "KAM" },{ content: "inputFilter" }] },
+                    { width: 100, id: 'pm',header: [{ text: "PM" },{ content: "inputFilter" }] },
+                    { 
+                        width: 160, id: 'stage', 
+                        header: [{ text: "Stage" }, { content: "selectFilter" }], 
+                        editorType: "select", 
+                        options: ["Opportunity", "RFQ/RFI", "BID", "Final Negociation", "Lost", "Abandoned", "Commandes", "Livrée", "Facture", "Suspended"] 
+                    },
+                    { 
+                        width: 160, id: 'temp', 
+                        header: [{ text: "Température" }, { content: "selectFilter" }], 
+                        editorType: "select", 
+                        options: ["Froid", "Moyen", "Chaud"] 
+                    },
+                    { 
+                        width: 160, id: 'domaine', 
+                        header: [{ text: "Domaine" }, { content: "selectFilter" }], 
+                        editorType: "select", 
+                        options: ["Training", "Product & System", "In-Service", "Improvaero"] 
+                    },
+                    { width: 100, id: 'charge',header: [{ text: "Charge" },{ content: "inputFilter" }] },
+                    { width: 100, id: 'ca',header: [{ text: "CA" },{ content: "inputFilter" }] },
+                    { width: 100, id: 'start_date',header: [{ text: "Start Date" },{ content: "inputFilter" }], type: 'date'},
+                    { width: 100, id: 'end_date',header: [{ text: "End Date" },{ content: "inputFilter" }], type: 'date'},
+                    { 
+                        width: 160, id: 'status', 
+                        header: [{ text: "Status" }, { content: "selectFilter" }], 
+                        editorType: "select", 
+                        options: ["Renewal", "Extension", "New Contract"] 
+                    },
+                    { width: 100, id: 'comments',header: [{ text: "Comments" },{ content: "inputFilter" }] },
+                    { width: 100, id: 'ressource',header: [{ text: "Ressource" },{ content: "inputFilter" }] },
+                    { width: 100, id: 'duration',header: [{ text: "Jours" },{ content: "inputFilter" }]},
+                    { hidden: true, id: 'progress',header: [{ text: "Progress" }]},
+                ],
+                data: this.gridData,
+                selection: "cell",
+                editable: true,
+                autoWidth: true,
+                keyNavigation: true
+            };
+
+            this.grid = new GridDHX("grid_container", config);
 
             this.grid.selection.setCell(this.grid.data.getItem(this.grid.data.getId(0)), this.grid.config.columns[0]);
         
@@ -550,7 +599,7 @@ export default {
                         project.schedule.parent = projectId;
                         project.schedule.nestedLevel = 1;
                     }
-                    project.schedule._id = String(data.id);
+                    // project.schedule._id = String(data.id);
                     project.schedule.name = data.text;
                     project.schedule.start_date = formatDate(data.start_date, 'DD-MM-YYYY', 'YYYY-MM-DD[T00:00:00.000Z]');
                     project.schedule.end_date = formatDate(data.end_date, 'DD-MM-YYYY', 'YYYY-MM-DD[T00:00:00.000Z]');
@@ -645,9 +694,13 @@ export default {
             var gantt = Gantt.getGanttInstance();
             gantt.destructor();
         },
+                tasks: function() {
+            var gantt = Gantt.getGanttInstance();
+            gantt.parse(this.tasks)
+        },
         gridData: function() {
             this.grid.data.parse(this.gridData)
-        }
+        },
     },
 }
 

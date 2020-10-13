@@ -12,7 +12,7 @@ exports.create = (req, res) => {
 
   const event = new Event({
     _id: req.body.id,
-    name: req.body.name,
+    projectName: req.body.projectName,
     client: req.body.client,
     projects: req.body.projects,
     deliverable: req.body.deliverable,

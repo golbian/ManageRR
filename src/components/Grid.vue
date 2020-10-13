@@ -37,7 +37,7 @@ export default {
             ProjectServices.getAllProject().then(response => {
 
                 for(const data of response.data) {
-
+                    console.log(data)
                     data.id = data._id;
                     data.start_date = formatDate(data.start_date, 'YYYY-MM-DD[T00:00:00.000Z]', 'DD-MM-YYYY');
                     data.end_date = formatDate(data.end_date, 'YYYY-MM-DD[T00:00:00.000Z]', 'DD-MM-YYYY');

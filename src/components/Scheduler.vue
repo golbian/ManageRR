@@ -8,6 +8,7 @@
 import "dhtmlx-scheduler/codebase/dhtmlxscheduler.js";
 import 'dhtmlx-scheduler/codebase/ext/dhtmlxscheduler_limit.js';
 import 'dhtmlx-scheduler/codebase/ext/dhtmlxscheduler_outerdrag.js';
+import 'dhtmlx-scheduler/codebase/ext/dhtmlxscheduler_tooltip.js';
 import { Tree as TreeDHX} from 'dhx-suite';
 import {Layout as LayoutDHX } from 'dhx-suite';
 
@@ -128,17 +129,20 @@ export default {
         scheduler.config.details_on_create = true;
 		scheduler.config.details_on_dblclick = true;
         // scheduler._init_event('onExternalDragIn');
-
-        scheduler.templates.event_header = function(start,end,ev){
-            return ev.name
-        };
+        scheduler.config.touch_tooltip = false;
 
         scheduler.templates.event_text=function(start, end, event){
             return "<p> Related Activity: "+event.activityName+"</p><hr><p> Client: "+event.client+"</p><hr><p> In-situ: "+event.insitu+"</p><hr><p> TPS: "+event.tps+"</p><hr>"
         }
 
+        // scheduler.templates.event_text=function(start, end, event){
+        //     return "<p> Related Activity: "+event.activityName+"</p><hr><p> Client: "+event.client+"</p><hr><p> In-situ: "+event.insitu+"</p><hr><p> TPS: "+event.tps+"</p><hr>"
+        // }
+
         EventServices.getAllEvents().then( response => {
+            console.log(response.data)
             for(const event of response.data) {
+                // console.log(event)
                 event.text = event.name
                 event.id = event._id
             }
@@ -150,6 +154,7 @@ export default {
                 projectId: ev.project_id,
                 scheduleId: ev.schedule_id
             }
+            console.log(ev)
             ScheduleServices.getSchedule(query).then(response => {
                 var schedule = response.data.schedules[0];
                 ev.client = schedule.client;
@@ -174,7 +179,7 @@ export default {
             days:  "fullweek",
             zones:[12.5*60, 13.5*60],
             css:   "week-end",
-            type:  "dhx_time_block"
+            // type:  "dhx_time_block"
         });
 
         scheduler.attachEvent("onEventChanged", function(id,ev){
@@ -233,7 +238,7 @@ export default {
                 return true;
             });
 
-            scheduler.config.lightbox.sections = [    
+            scheduler.config.lightbox.sections = [
                 {name:"Name", height:72, map_to:"name", type:"textarea" , focus:true},
                 {name: "Project", height: 72, type:"select", options: this.project_select_options, map_to:"project_id", onchange:parent_onchange },
                 {name:"Livrable/Lot", height: 72, map_to: "deliverable", type:"textarea"},
