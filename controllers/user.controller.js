@@ -23,7 +23,12 @@ exports.findAll = (req, res) => {
   const name = req.query.name;
   var condition = name ? { name: { $regex: new RegExp(name), $options: "i" } } : {};
 
-  User.find(condition).select("-password -email")
+  User.find(condition)
+  .populate({
+    path: 'roles',
+    populate: { path: 'roles' },
+  })
+  .select("-password")
     .then(data => {
       res.send(data);
     })
@@ -44,6 +49,7 @@ exports.findOne = (req, res) => {
       path: 'roles',
       populate: { path: 'users.roles' }
     })
+    .select("-password")
     .then(data => {
       if (!data)
         res.status(404).send({ message: "Not found User with id " + id });
@@ -64,9 +70,40 @@ exports.update = (req, res) => {
     });
   }
 
+  console.log(req.body)
+
   const id = req.params.id;
 
-  User.findByIdAndUpdate(id, req.body, { useFindAndModify: false })
+  User.update({_id: id}, req.body, { useFindAndModify: false })
+    .then(data => {
+      console.log('data', data)
+      if (!data) {
+        res.status(404).send({
+          message: `Cannot update User with id=${id}. Maybe User was not found!`
+        });
+      } else res.send({ message: "User was updated successfully." });
+    })
+    .catch(err => {
+      console.log(err);
+      res.status(500).send({
+        message: "Error updating User with id=" + id
+      });
+    });
+};
+
+
+//Add a Role to an User
+exports.pushRole = (req, res) => {
+  if (!req.body) {
+    return res.status(400).send({
+      message: "Data to update can not be empty!"
+    });
+  }
+
+  const id = req.params.id;
+  const roleId = req.roleId;
+
+  User.findByIdAndUpdate(id, req.body, {$push: {roles: roleId}},{ useFindAndModify: false })
     .then(data => {
       console.log(data)
       if (!data) {
@@ -108,7 +145,6 @@ exports.deleteProject = (req,res) => {
 // Delete a User with the specified id in the request
 exports.delete = (req, res) => {
   const id = req.params.id;
-  console.log(id)
 
   User.findOneAndDelete({_id : id}, { useFindAndModify: false })
     .then(data => {

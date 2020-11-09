@@ -1,9 +1,9 @@
 module.exports = mongoose => {
 
     var eventSchema = mongoose.Schema({
-        _id: String,
         name:String,
         client: String,
+        owner: mongoose.Schema.Types.ObjectId,
         // projects: [
         //     {
         //       _id: String,
@@ -12,8 +12,8 @@ module.exports = mongoose => {
         //     }
         // ],
         deliverable: String,
-        project_id: String,
-        schedule_id: String,
+        project_id: mongoose.Schema.Types.ObjectId,
+        schedule_id: mongoose.Schema.Types.ObjectId,
         activityName: String,
         projectName: String,
         start_date:String,
@@ -24,6 +24,6 @@ module.exports = mongoose => {
         },
         { timestamps: true }
     );
-    const Pointing = mongoose.model("event", eventSchema);
-        return Pointing;
+    const Event = mongoose.model("event", eventSchema);
+        return Event;
       };

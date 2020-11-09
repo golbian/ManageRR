@@ -1,5 +1,5 @@
 <template>
-<div ref="container" id='container' class="widget-box">
+<div ref="container" id='container' class="widget-box w-100 h-100">
 </div>
 </template>
 
@@ -113,6 +113,7 @@ export default {
                 selection: "cell",
                 editable: true,
                 autoWidth: true,
+                height: window.innerHeight*0.95,
                 keyNavigation: true
             };
 

@@ -1,5 +1,6 @@
 const db = require("../models");
 const mongoose = require("mongoose");
+var ObjectId = mongoose.Types.ObjectId;
 const Event = db.event;
 
 // Create and Save a new Event
@@ -11,7 +12,7 @@ exports.create = (req, res) => {
   }
 
   const event = new Event({
-    _id: req.body.id,
+    owner: req.body.owner,
     projectName: req.body.projectName,
     client: req.body.client,
     projects: req.body.projects,
@@ -167,20 +168,27 @@ exports.findAllPublished = (req, res) => {
       });
   };
 
-  exports.findAllOwnerEvent = (req, res) => {
-    Event.find({ pm: req.params.id })
-    .populate({
-      path: 'projects',
-      populate: { path: 'projects' },
-      select: "id"
-    })
-      .then(data => {
-        res.send(data);
+  exports.findAllOwnerEvents = (req, res) => {
+    const ownerId = req.params.id;
+    Event.find()
+    .then(() => {
+      return Event.aggregate([
+          { $match: { owner: new ObjectId(ownerId) }},
+      ])
+      .exec(function(err, doc) {
+        Event.populate(doc, {
+            path: 'projects',
+            populate: { path: 'project_id' },
+          },function(err,data) {
+            if(err) {
+              res.status(500).send({
+                message:
+                  err.message || "Some error occurred while retrieving events."
+              });
+            } else {
+              res.send(data);
+            }
+        })
       })
-      .catch(err => {
-        res.status(500).send({
-          message:
-            err.message || "Some error occurred while retrieving projects."
-        });
-      });
+    })
   };

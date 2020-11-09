@@ -23,7 +23,12 @@ class UserService {
   }
 
   updateUser(id, data) {
+    delete data.value
     return http.put(`/users/${id}`, data, { headers: authHeader()});
+  }
+
+  pushRoleToUser(id, roleId) {
+    return http.put(`/users/${id}/${roleId}`, { headers: authHeader()});
   }
 
   deleteProject(id) {

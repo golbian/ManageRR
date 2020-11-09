@@ -11,6 +11,10 @@ class eventServices {
       return http.get(`/events`, { headers: authHeader()});
     }
 
+    getAllOwnerEvents(id) {
+      return http.get(`/events/user/${id}`,{ headers: authHeader() });
+    }
+
     getEvent(id) {
       return http.get(`/events/${id}`, { headers: authHeader()});
     }

@@ -50,18 +50,16 @@ exports.create = (req, res) => {
 
 // Retrieve all Projects from the database.
 exports.findAll = (req, res) => {
-    const name = req.query.name;
-    var condition = name ? { name: { $regex: new RegExp(name), $options: "i" } } : {};
   
-    Project.find(condition)
+    Project.find()
 .then(() => {
         return Project.aggregate([
           {
-            $addFields:
-          {
-            charge: { $sum: "$schedules.charge" },
-          }
-        }]).exec(function(err, doc) {
+            $addFields: {
+              charge: { $sum: "$schedules.charge" },
+            }
+          },
+      ]).exec(function(err, doc) {
           Project.populate(doc , {
             path: 'schedules.resources',
             populate: { path: 'resources' }
@@ -217,19 +215,30 @@ exports.findAllPublished = (req, res) => {
   };
 
   exports.findAllOwnerProject = (req, res) => {
-    Project.find({ pm: req.params.id })
-    .populate({
-      path: 'schedules.resources',
-      populate: { path: 'resources' },
-      select: "username"
-    })
-      .then(data => {
-        res.send(data);
+    const pm = req.params.user;
+    Project.find().then(()=>{
+      return Project.aggregate([
+        { $match: { pm: pm } },
+        {
+          $addFields: {
+            charge: { $sum: "$schedules.charge" },
+          }
+        },
+    ]).exec(function(err, doc) {
+      Project.populate(doc, {
+        path: 'schedules.resources',
+        populate: { path: 'resources' },
+        select: "username"
+        }, function(err, data) {
+        if(err) {
+            res.status(500).send({
+              message:
+                err.message || "Some error occurred while retrieving projects."
+            });
+          } else {
+            res.send(data);
+          }
+        })
       })
-      .catch(err => {
-        res.status(500).send({
-          message:
-            err.message || "Some error occurred while retrieving projects."
-        });
-      });
+    })
   };

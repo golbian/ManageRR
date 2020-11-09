@@ -1,6 +1,5 @@
 const db = require("../models");
 const mongoose = require("mongoose");
-const { project } = require("../models");
 const Project = db.project;
 const User = db.user;
 
@@ -80,7 +79,7 @@ exports.findOne = (req, res) => {
         "schedules.$.country": req.body.schedule.country,
         "schedules.$.kam": req.body.schedule.kam,
         "schedules.$.charge": req.body.schedule.charge,
-        // "schedules.$.pm": req.body.schedule.pm,
+        "schedules.$.pm": req.body.schedule.pm,
         "schedules.$.stage": req.body.schedule.stage,
         "schedules.$.etp": req.body.schedule.etp,
         "schedules.$.domaine": req.body.schedule.domaine,
@@ -124,8 +123,6 @@ exports.delete = (req, res) => {
   console.log(req.params)
   const id = req.params.projectId;
   const scheduleId = req.params.scheduleId;
-
-  console.log(req.body);
 
   Project.findOneAndUpdate({_id: id }, { $pull: {schedules:{_id : scheduleId}}},{ useFindAndModify: false })
     .then(data => {

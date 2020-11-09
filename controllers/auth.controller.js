@@ -10,6 +10,7 @@ exports.signup = (req, res) => {
   const user = new User({
     username: req.body.username,
     email: req.body.email,
+    sigle: req.body.sigle,
     password: bcrypt.hashSync(req.body.password, 8),
     value: req.body.value
   });
@@ -95,17 +96,27 @@ exports.signin = (req, res) => {
       // var authorities = [];
 
       Role.find({
-        '_id': { $in: 
-            user.roles
-        }
-        },  function(){
-         res.status(200).send({
-          id: user._id,
-          username: user.username,
-          email: user.email,
-          roles: user.roles,
-          accessToken: token
-        });
-      })
+        // '_id': { $in: 
+        //     user.roles
+        // }
+        })
+        .then(()=> {
+            return User.populate(user , {
+              path: 'roles',
+              populate: { path: 'roles' },
+              select: "-_id"
+            }, function(err, data) {
+              if(!err) {
+                res.status(200).send({
+                  id: user._id,
+                  username: user.username,
+                  email: user.email,
+                  accessToken: token,
+                  roles: user.roles,
+                  sigle: user.sigle
+                });
+              }
+          })
+        })
     });
 };

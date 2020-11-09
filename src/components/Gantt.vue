@@ -7,6 +7,7 @@
 <script>
 import {Gantt} from 'dhtmlx-gantt';
 import {Layout as LayoutDHX } from 'dhx-suite';
+
 import ProjectServices from '../services/project.service';
 import ScheduleServices from '../services/schedule.service';
 import LinkServices from '../services/link.service';
@@ -870,7 +871,6 @@ html, body{
     border: 1px solid #ced4da;
     display: inline;
     font-size: 12px;
-    height: 100%;
     font-weight: bold;
     color: rgba(0, 0, 0, 1);
 }

@@ -9,10 +9,6 @@ module.exports = mongoose => {
     var activitySchema = mongoose.Schema({
         name: String,
         kam: String,
-        pm: {
-          type: mongoose.Schema.Types.Mixed,
-          ref: "user"
-        },
         client: String,
         stage: String,
         temp: String,
@@ -20,6 +16,7 @@ module.exports = mongoose => {
         etp: mongoose.Schema.Types.Mixed,
         charge: mongoose.Schema.Types.Mixed,
         ca: mongoose.Schema.Types.Mixed,
+        pm: String,
         comments: String,
         country: String,
         type: String,
@@ -52,10 +49,7 @@ module.exports = mongoose => {
         name: String,
         country: String,
         kam: String,
-        pm : {
-          type: mongoose.Schema.Types.Mixed || mongoose.Schema.Types.ObjectId,
-          ref: "user"
-        },
+        pm : String,
         stage: String,
         temp: String,
         domaine: String,

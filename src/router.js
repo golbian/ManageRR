@@ -13,7 +13,7 @@ export default new Router({
         { path: '/home', component: ()=> import('./components/Home.vue')},
         { path: '/project/:id', component: ()=> import('./components/Project.vue')},
         { path: '/login', name: 'login', component: ()=> import('./components/Login.vue')},
-        { path: '/register', component: ()=> import('./components/Register.vue')},
+        { path: '/register', name: 'register', component: ()=> import('./components/Register.vue')},
         { path: '/profile', name: 'profile', component: () => import('./components/Profile.vue')},
         { path: '/admin', name: 'admin', component: () => import('./components/BoardAdmin.vue')},
         { path: '/mod', name: 'moderator', component: () => import('./components/BoardModerator.vue')},

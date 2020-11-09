@@ -6,9 +6,9 @@
 </div>
 </template>
 <script>
-import {Gantt} from 'dhtmlx-gantt';
+import {Gantt} from '../../lib/gantt_7.0.10_commercial';
 import { Grid as GridDHX} from "dhx-grid";
-import {Layout as LayoutDHX } from 'dhx-suite';
+import {Layout as LayoutDHX } from '../../lib/suite_6.5.8_commercial';
 import "dhx-grid/codebase/grid.min.css";
 import moment from 'moment';
 import ProjectServices from '../services/project.service';

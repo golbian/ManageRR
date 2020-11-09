@@ -23,6 +23,20 @@
             >{{errors.first('username')}}</div>
           </div>
           <div class="form-group">
+            <label for="sigle">Sigle</label>
+            <input
+              v-model="user.sigle"
+              v-validate="'required|min:3|max:3'"
+              type="text"
+              class="form-control"
+              name="sigle"
+            />
+            <div
+              v-if="submitted && errors.has('sigle')"
+              class="alert-danger"
+            >{{errors.first('sigle')}}</div>
+          </div>
+          <div class="form-group">
             <label for="email">Email</label>
             <input
               v-model="user.email"
@@ -81,11 +95,6 @@ export default {
   computed: {
     loggedIn() {
       return this.$store.state.auth.status.loggedIn;
-    }
-  },
-  mounted() {
-    if (this.loggedIn) {
-      this.$router.push('/profile');
     }
   },
   methods: {

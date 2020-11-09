@@ -3,6 +3,7 @@ module.exports = mongoose => {
     username: String,
     email: String,
     password: String,
+    sigle: String,
     value: Number,
     roles: [
       {
@@ -10,13 +11,6 @@ module.exports = mongoose => {
         ref: "role"
       }
     ],
-    projects: [
-      {
-        _id: String,
-        type: String,
-        ref: "project"
-      }
-    ]
   }, 
   { timestamps: true }
   )

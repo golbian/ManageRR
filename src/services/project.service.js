@@ -4,15 +4,15 @@ import authHeader from './auth-header';
 class projectServices {
 
     getAllProject() {
-      return http.get("/projects",{ headers: authHeader() });
+      return http.get(`/projects`,{ headers: authHeader() });
     }
 
     getAllPublishedProject() {
       return http.get("/projects/published",{ headers: authHeader() });
     }
 
-    getAllOwnerProject(id) {
-      return http.get(`/projects/pm/${id}`,{ headers: authHeader() });
+    getAllOwnerProject(user) {
+      return http.get(`/projects/user/${user}`,{ headers: authHeader() });
     }
 
     async getProject(id) {

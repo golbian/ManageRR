@@ -3,6 +3,8 @@ import router from './router'
 import App from './App.vue'
 import store from './store';
 import VModal from 'vue-js-modal'
+import vuetify from '@/plugins/vuetify'
+import ToggleButton from 'vue-js-toggle-button'
 import 'bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import VeeValidate from 'vee-validate';
@@ -24,6 +26,7 @@ library.add(faHome, faUser, faUserPlus, faSignInAlt, faSignOutAlt, faPlus, faPen
 Vue.config.productionTip = false;
 
 Vue.use(VeeValidate);
+Vue.use(ToggleButton)
 Vue.use(VModal);
 Vue.component('font-awesome-icon', FontAwesomeIcon);
 
@@ -64,5 +67,6 @@ router.beforeEach((to, from, next) => {
 new Vue({
   router,
   store,
+  vuetify,
   render: h => h(App),
 }).$mount('#app')
