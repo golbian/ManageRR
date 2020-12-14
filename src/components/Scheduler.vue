@@ -2,25 +2,13 @@
     <div ref="container">
         <div id="layout">
             <modal name="lightboxModal" height="auto" :scrollable="true">
-                    <form name="form" id="form"  class="m-5" v-on:submit.prevent="updateEvent(editedEvent)">
-                    <h4 v-if="editedEvent.id ==''" class="text-center">Create an event</h4>
-                    <h4 v-else class="text-center">Update an Event</h4>
-                    <div class="form-group">
-                        <v-combobox
-                            :items="documents"
-                            :item-text="documents.value"
-                            :item-value="documents.id"
-                            label="Filters..."
-                            multiple
-                            outlined
-                            chips
-                        ></v-combobox>
-                    </div>
+                    <form name="form" id="form"  class="m-5" v-on:submit.prevent="submitEvent(editedEvent)">
+                    <h4 v-model="editedEvent.name" class="text-center">{{editedEvent.name}}</h4>
                     <div class="form-group">
                             <label for="text">Name</label>
                             <input
                             id="input_text"
-                            v-model="editedEvent.text"
+                            v-model="editedEvent.name"
                             v-validate="'required|min:3|max:15'"
                             type="text"
                             class="form-control"
@@ -30,6 +18,21 @@
                             v-if="submitted && errors.has('text')"
                             class="alert-danger"
                             >{{errors.first('text')}}</div>
+                    </div>
+                    <div class="form-group">
+                            <label for="client">Client</label>
+                            <input
+                            id="input_client"
+                            v-model="editedEvent.client"
+                            v-validate="'required|min:3|max:25'"
+                            type="text"
+                            class="form-control"
+                            name="client"
+                            />
+                            <div
+                            v-if="submitted && errors.has('client')"
+                            class="alert-danger"
+                            >{{errors.first('client')}}</div>
                     </div>
                     <div class="form-group">
                             <label for="deliverable">Livrable</label>
@@ -64,19 +67,10 @@
                     <div class="col-sm-4 mt-4">
                         <toggle-button id="input_insitu" @change="updateInsitu(editedEvent.insitu)" color="#007bff" :width="100" :height="45" :value="editedEvent.insitu" :sync="true" :labels="{checked: 'In-Situ', unchecked: 'In-Situ'}" />
                     </div>
-                    <div class="form-group col-sm-12">
-                         <v-slider
-                            v-model="editedEvent.tps"
-                            step="1"
-                            ticks="always"
-                            tick-size="4"
-                            min="0"
-                            max="8"
-                        ></v-slider>
-                    </div>
                     </div>
                     <div class="form-group">
-                        <button class="btn btn-primary btn-block">Save</button>
+                        <button v-if="!editedEvent.createdAt" class="btn btn-primary btn-block">Create</button>
+                        <button v-else class="btn btn-primary btn-block">Save</button>
                     </div>
                 </form>
             </modal>
@@ -85,7 +79,7 @@
 </template>
 
 <script>
-import "dhtmlx-scheduler/codebase/dhtmlxscheduler";
+import "dhtmlx-scheduler";
 import 'dhtmlx-scheduler/codebase/ext/dhtmlxscheduler_limit.js';
 import 'dhtmlx-scheduler/codebase/ext/dhtmlxscheduler_editors.js';
 import 'dhtmlx-scheduler/codebase/ext/dhtmlxscheduler_outerdrag.js';
@@ -105,25 +99,23 @@ export default {
             tree: null,
             scheduler: null,
             timePicker: null,
-            comboBox: null,
-            window: null,
             documents: [],
             user: {},
             events: [],
             submitted: false,
             successful: false,
             editedEvent: {
-                // project: {},
-                // schedule: {},
                 text: null,
                 deliverable: null,
                 insitu: true,
                 tps: 8,
+                client: null,
             },
             project_select_options: [],
             schedule_select_options: [],
             project_id: null,
-            scheduler_data: [],
+            scheduler_data: null,
+            focusedItem: null,
         }
     },
     computed: {
@@ -131,7 +123,6 @@ export default {
             return this.$store.state.auth.user;
         },
     },
-
     created: function() {
 
         scheduler.clearAll();
@@ -245,45 +236,30 @@ export default {
             
         var layout = new LayoutDHX("layout", config);
 
-        this.tree = new TreeDHX("tree_container",{
+        this.tree = new TreeDHX(null, {
             dragMode:"both",
             dropBehaviour:"sibling",
             // dragCopy: true,
             css: "tree-class"
         });
 
-        this.tree.events.on("itemClick", (id, e) => {
-            this.editedEvent = this.tree.data.getItem(id)
-            console.log(this.editedEvent)
+        // this.tree.events.on("itemClick", (id,) => {
+        //     this.editedEvent = this.tree.data.getItem(id)
+        // });
+
+        this.tree.selection.events.on("AfterSelect", (id) => {
+            var event = this.tree.selection.getItem();
+
+
+            this.focusedItem = {
+                text: event.value,
+                tps: event.tps,
+                id: event.id,
+                name: event.text,
+                insitu: true,
+            }
         });
-        // var form = document.getElementById("form");
-        // var html = function(id) { return document.getElementById(id); };
- 
-        // scheduler.showLightbox = (id) => {
-        //     var ev = scheduler.getEvent(id);
-        //     this.editedEvent = ev;
-        //     scheduler.startLightbox(id, html("form"));
-        //     html("input_name").value = this.editedEvent.text;
-        //     document.getElementById("input_deliverable").value = this.editedEvent.deliverable;
-        //     document.getElementById("input_insitu").value = this.editedEvent.insitu;
-        //     document.getElementById("time_picker").value = this.editedEvent.time;
-        //     document.getElementById("comboBox").value = this.editedEvent.filter;
-        // }
-        // //needs to be attached to the 'save' button
-        // function save_form() {
-        //     var ev = scheduler.getEvent(scheduler.getState().lightbox_id);
-        //     this.editedEvent.text = document.getElementById("input_name").value;
-        //     this.editedEvent.deliverable = document.getElementById("input_deliverable").value;
-        //     this.editedEvent.insitu = document.getElementById("input_insitu").value;
-        //     this.editedEvent.time = document.getElementById("time_picker").value;
-        //     this.editedEvent.filter = document.getElementById("comboBox").value;
-        //     scheduler.endLightbox(true, form);
-        // }
-        // //needs to be attached to the 'cancel' button
-        // function close_form(argument) {
-        //     scheduler.endLightbox(false, form);
-        // }
-        
+
         scheduler.skin = "material";
         scheduler.config.header = [
             "week",
@@ -317,41 +293,48 @@ export default {
         scheduler.config.details_on_create = true;
         scheduler.config.details_on_dblclick = true;
         scheduler.config.responsive_lightbox = true;
-        // scheduler._init_event('onExternalDragIn');
         scheduler.config.touch_tooltip = false;
 
         scheduler.attachEvent("onBeforeLightbox", (id) => {
             this.$modal.show('lightboxModal')
+            var event = this.getEvent(id);
+            if(event.insitu === null || event.insitu === undefined) {
+                event.insitu = true
+            }
+
+            this.editedEvent = event;
             return false
         })
 
         EventServices.getAllOwnerEvents(this.currentUser.id).then( response => {
             for(const event of response.data) {
                 event.id = event._id
-                event.text = event.activityName
+                event.text = event.name
+                console.log(event)
             }
             this.scheduler_data = response.data;
         })
 
-        scheduler.attachEvent("onEventAdded", (id,ev)=> {
-            var query = {
-                projectId: ev.project_id,
-                scheduleId: ev.schedule_id
-            }
-            ScheduleServices.getSchedule(query).then(response => {
-                var schedule = response.data.schedules[0];
-                ev.owner = this.currentUser.id
-                ev.client = schedule.client;
-                ev.tps = schedule.duration;
-                ev.activityName = schedule.name;
-                console.log(ev)
-                EventServices.createEvent(ev).then(data => {
-                    console.log(data)
-                }).catch(err => {
-                    console.log(err)
-                })
-            })
-        });
+        // this.submitEvent = (ev) => {
+        //     if(!ev.createdAt) {
+        //         var query = {
+        //             projectId: ev.project_id,
+        //             scheduleId: ev.schedule_id
+        //         }
+        //         ev.owner = this.currentUser.id;
+        //         ev.name = ev.project.text;
+        //         ev.tps = ev.project.tps;
+        //         EventServices.createEvent(ev).then(data => {
+        //             this.tree.selection.remove();
+        //             this.editedEvent = null;
+        //         })
+        //     } else {
+        //         EventServices.updateEvent(ev.id, ev).then(data => {
+        //             this.tree.selection.remove();
+        //             this.editedEvent = null;
+        //         })
+        //     }
+        // }
 
         scheduler.addMarkedTimespan({
             days:  [6,0],
@@ -366,17 +349,6 @@ export default {
             css:   "week-end",
             // type:  "dhx_time_block"
         });
-
-        scheduler.attachEvent("onEventChanged", (id,ev) => {
-            EventServices.updateEvent(id, ev)
-        });
-
-        scheduler.attachEvent("onDragEnd", (id,ev) => {
-            var event = scheduler.getEvent(id)
-            EventServices.updateEvent(id, event)
-        })
-         
-        
     },
     methods: {
         updateInsitu(insitu) {
@@ -386,6 +358,34 @@ export default {
             this.editedEvent.insitu = true
             }
         },
+        submitEvent(ev) {
+            if(!ev.createdAt) {
+                var query = {
+                    projectId: ev.project_id,
+                    scheduleId: ev.schedule_id
+                }
+                ev.owner = this.currentUser.id;
+                EventServices.createEvent(ev).then(data => {
+                    this.tree.selection.remove();
+                    this.editedEvent = {};
+                })
+            } else {
+                EventServices.updateEvent(ev.id, ev).then(data => {
+                    this.tree.selection.remove();
+                    this.editedEvent = {};
+                })
+            }
+        },
+        getEvent(id) {
+            if(this.focusedItem) {
+                var event = scheduler.getEvent(id)
+                this.focusedItem.start_date = event.start_date;
+                this.focusedItem.end_date = event.end_date;
+                return this.focusedItem;
+            } else {
+                return scheduler.getEvent(id)
+            }
+        }
     },
     watch: {
         documents: function() {
@@ -408,38 +408,6 @@ export default {
             }
 
             this.project_select_options = project_options;
-
-            // var update_select_options = function(select, options) {
-            //     select.options.length = 0;
-            //     for (var i=0; i<options.length; i++) {
-            //         var option = options[i];
-            //         select[i] = new Option(option.label, option.key);
-            //     }
-            // };
-
-            // var parent_onchange = (event) => {
-            //     this.project_id = event;
-            //     var new_child_options = this.schedule_select_options[this.project_id];
-            //     update_select_options(scheduler.formSection('Activity').control, new_child_options);
-            // };
-        
-            // scheduler.attachEvent("onBeforeLightbox", (id) => {
-            //     var ev = scheduler.getEvent(id);
-            //     if (!ev.schedule_id) {
-            //         this.project_id = this.project_select_options[0].key;
-            //         var new_child_options = this.schedule_select_options[this.project_id];
-            //         update_select_options(scheduler.formSection('Activity').control, new_child_options);
-            //     }
-            //     return true;
-            // });
-
-            // scheduler.config.lightbox.sections = [
-            //     {name: "Project", height: 72, type:"combo", options: this.project_select_options, map_to:"project_id", onchange:parent_onchange, filtering: true},
-            //     {name:"Activity", height: 72, type:"select", options: this.schedule_select_options, map_to:"schedule_id", filtering: true},
-            //     {name:"Livrable/Lot", height: 72, map_to: "deliverable", type:"textarea"},
-            //     {name:"In-Situ", height: 72, map_to: "insitu", type:"select",  options: [{key: true, label: "yes"} , {key:false, label: "no"}], vertical: false},
-            //     {name:"time", height:72, type:"time", map_to:"auto"},
-            // ];
         },
         events: function() {
             this.tree.data.parse(this.documents);

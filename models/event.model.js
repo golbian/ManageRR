@@ -14,8 +14,6 @@ module.exports = mongoose => {
         deliverable: String,
         project_id: mongoose.Schema.Types.ObjectId,
         schedule_id: mongoose.Schema.Types.ObjectId,
-        activityName: String,
-        projectName: String,
         start_date:String,
         end_date: String,
         tps: Number,

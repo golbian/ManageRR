@@ -10,23 +10,30 @@ exports.create = (req, res) => {
     });
   }
 
-  const id = req.body._id;
+  const id = req.body.root;
 
-  Project.findByIdAndUpdate({_id: id}, {$push: { schedules: req.body.schedule}}, { useFindAndModify: false })
+  Project.findOneAndUpdate({_id: id}, {$push: { schedules: req.body}}, { useFindAndModify: true })
     .then(data => {
-      console.log(data);
       if (!data) {
         res.status(404).send({
           message: `Cannot create Schedule. Maybe Project was not found!`
         });
-      } else res.send({ message: "Schedule was created successfully." });
+      } else {
+
+        try {
+          res.status(200).send({
+            tid: data.schedules.slice(-1)[0]._id,
+            action:"inserted",
+          });
+        } catch {
+          res.status(500).send({
+            message: "Error creating Schedule"
+          });
+        }
+
+        
+      }
     })
-    .catch(err => {
-      console.log(err);
-      res.status(500).send({
-        message: "Error creating Schedule"
-      });
-    });
 };
 
 exports.findOne = (req, res) => {
@@ -59,45 +66,44 @@ exports.findOne = (req, res) => {
       });
     }
   
-    const id = req.body._id;
-    const scheduleId = req.body.schedule._id;
+    const id = req.body.root;
+    const scheduleId = req.body.id;
 
     Project.findOneAndUpdate(
        {_id: id, "schedules._id": scheduleId},
        {
-        "schedules.$.start_date": req.body.schedule.start_date,
-        "schedules.$.duration": req.body.schedule.duration,
-        "schedules.$.parent": req.body.schedule.parent,
-        "schedules.$.client": req.body.schedule.client,
-        "schedules.$.status": req.body.schedule.status,
-        "schedules.$.type": req.body.schedule.type, 
-        "schedules.$.progress": req.body.schedule.progress,
-        "schedules.$.end_date": req.body.schedule.end_date,
-        "schedules.$.name": req.body.schedule.name,
-        "schedules.$.contract": req.body.schedule.contract,
-        "schedules.$.resources": req.body.schedule.resources,
-        "schedules.$.country": req.body.schedule.country,
-        "schedules.$.kam": req.body.schedule.kam,
-        "schedules.$.charge": req.body.schedule.charge,
-        "schedules.$.pm": req.body.schedule.pm,
-        "schedules.$.stage": req.body.schedule.stage,
-        "schedules.$.etp": req.body.schedule.etp,
-        "schedules.$.domaine": req.body.schedule.domaine,
-        "schedules.$.ca": req.body.schedule.ca,
-        "schedules.$.comments": req.body.schedule.comments,
-        "schedules.$.temp": req.body.schedule.temp,
+        "schedules.$.start_date": req.body.start_date,
+        "schedules.$.duration": req.body.duration,
+        "schedules.$.parent": req.body.parent,
+        "schedules.$.client": req.body.client,
+        "schedules.$.status": req.body.status,
+        "schedules.$.type": req.body.type, 
+        "schedules.$.progress": req.body.progress,
+        "schedules.$.end_date": req.body.end_date,
+        "schedules.$.name": req.body.name,
+        "schedules.$.contract": req.body.contract,
+        "schedules.$.resources": req.body.resources,
+        "schedules.$.country": req.body.country,
+        "schedules.$.kam": req.body.kam,
+        "schedules.$.charge": req.body.charge,
+        "schedules.$.pm": req.body.pm,
+        "schedules.$.stage": req.body.stage,
+        "schedules.$.etp": req.body.etp,
+        "schedules.$.domaine": req.body.domaine,
+        "schedules.$.ca": req.body.ca,
+        "schedules.$.comments": req.body.comments,
+        "schedules.$.temp": req.body.temp,
       },{ useFindAndModify: false }
     )
       .then(data => {
         if(req.body.isAdmin) {
-          for(const resource of req.body.schedule.resources) {
+          for(const resource of req.body.resources) {
             User.findOneAndUpdate({_id: resource._id},{$set: { value: resource.value }, $addToSet: { projects: id }},{ useFindAndModify: false }).then(data => {
               if(!data) {
                   console.log(`Cannot update User value with id=${resource._id} in schedule(${scheduleId}) for Project with id=${id}`)
               } else console.log("User value was updated successfully.");
             })
             .catch(err => {
-              console.log(err);
               console.log(
                 "Error updating User value with id=" + resource._id
               );
@@ -108,19 +114,21 @@ exports.findOne = (req, res) => {
           res.status(404).send({
             message: `Cannot update Schedule with id=${scheduleId} in Project with id=${id}. Maybe Schedule was not found!`
           });
-        } else res.send({ message: "Schedule was updated successfully." });
+        } else res.send({ 
+          "action":"updated",
+          message: "Schedule was updated successfully." 
+        });
       })
       .catch(err => {
         console.log(err);
         res.status(500).send({
-          message: "Error updating Schedule with id=" + id
+          message: "Error updating Schedule with id=" + scheduleId
         });
       });
   };
 
   // Delete a Schedule with the specified id in the request
 exports.delete = (req, res) => {
-  console.log(req.params)
   const id = req.params.projectId;
   const scheduleId = req.params.scheduleId;
 
@@ -132,6 +140,7 @@ exports.delete = (req, res) => {
         });
       } else {
         res.send({
+          "action":"deleted",
           message: "Schedule with id= " + scheduleId + "was deleted successfully!"
         });
       }

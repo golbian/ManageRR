@@ -18,6 +18,7 @@ module.exports = mongoose => {
         ca: mongoose.Schema.Types.Mixed,
         pm: String,
         comments: String,
+        root: String,
         country: String,
         type: String,
         parent: String,

@@ -8,6 +8,7 @@ class eventServices {
     }
 
     getAllEvents() {
+      console.log(http)
       return http.get(`/events`, { headers: authHeader()});
     }
 

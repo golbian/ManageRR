@@ -1,6 +1,6 @@
 module.exports = {
     devServer: {
-      port: 8081
+      port: process.env.PORT_VUE
     },
     lintOnSave: 'warning'
   }

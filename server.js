@@ -1,3 +1,4 @@
+require('dotenv').config()
 const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
@@ -5,11 +6,10 @@ const multer =  require('multer');
 const upload = multer( { dest : '/api/upload' } );
 
 const app = express();
-
 const db = require("./models");
 const Role = db.role;
 db.mongoose
-  .connect(db.url, {
+  .connect(process.env.DB, {
     useNewUrlParser: true,
     useUnifiedTopology: true
   })
@@ -23,7 +23,7 @@ db.mongoose
   });
 
 var corsOptions = {
-  origin: "http://localhost:8081"
+  origin: process.env.URL + process.env.PORT_VUE
 };
 
 app.use(cors(corsOptions));
@@ -44,6 +44,7 @@ require("./routes/auth.routes")(app);
 require('./routes/user.routes')(app);
 require('./routes/roles.routes')(app);
 require('./routes/project.routes')(app);
+require('./routes/task.routes')(app);
 require('./routes/schedule.routes')(app);
 require('./routes/event.routes')(app);
 require('./routes/link.routes')(app);
@@ -95,7 +96,7 @@ function initial() {
 }
 
 // set port, listen for requests
-const PORT = process.env.PORT || 8080
+const PORT = process.env.PORT_SERVER || 8080
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}.`);
 });

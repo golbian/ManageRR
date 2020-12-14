@@ -19,7 +19,7 @@ class projectServices {
         return http.get(`/projects/${id}`,{ headers: authHeader() });
       }
 
-    createProject(data) {
+    create(data) {
       return http.post("/projects", data, { headers: authHeader()});
      }
 
@@ -27,11 +27,11 @@ class projectServices {
       return http.put(`/projects/pm/${id}`, data, {headers: authHeader()});
     }
 
-    updateProject(id, data) {
+    update(id, data) {
       return http.put(`/projects/${id}`, data, { headers: authHeader()});
     }
 
-    deleteProject(id) {
+    delete(id) {
       return http.delete(`/projects/${id}`,{ headers: authHeader() });
     }
 
