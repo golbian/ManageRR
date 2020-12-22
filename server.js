@@ -8,7 +8,7 @@ const app = express();
 const db = require("./models");
 const Role = db.role;
 db.mongoose
-  .connect(process.env.DB, {
+  .connect("mongodb://localhost:27017/manage_rr", {
     useNewUrlParser: true,
     useUnifiedTopology: true
   })
@@ -22,7 +22,7 @@ db.mongoose
   });
 
 var corsOptions = {
-  origin: process.env.URL + process.env.PORT_VUE
+  origin: "https://localhost:8081"
 };
 
 app.use(cors(corsOptions));

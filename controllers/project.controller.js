@@ -59,12 +59,12 @@ exports.findAll = (req, res) => {
               charge: { $sum: "$schedules.charge" },
             }
           },
-      ]).exec(function(err, doc) {
-          Project.populate(doc , {
+      ]).exec(function(err, data) {
+          /*Project.populate(doc , {
             path: 'schedules.resources',
             populate: { path: 'resources' }
-          }, 
-          function(err, data) {
+          },
+          function(err, data) {*/
             if(!err) {
               res.send(data);
             } else {
@@ -75,7 +75,7 @@ exports.findAll = (req, res) => {
             }
           });
       })
-  });
+  // });
 };
 
 // Find a single Project with an id
@@ -83,10 +83,10 @@ exports.findOne = (req, res) => {
     const id = req.params.id;
   
     Project.findById(id)
-      .populate({
-        path: 'schedules.resources',
-        populate: { path: 'resources' }
-      })
+      // .populate({
+      //   path: 'schedules.resources',
+      //   populate: { path: 'resources' }
+      // })
       .then(data => {
         if (!data)
           res.status(404).send({ message: "Not found Project with id " + id });
@@ -198,11 +198,11 @@ exports.deleteAll = (req, res) => {
 // Find all published Projects
 exports.findAllPublished = (req, res) => {
     Project.find({ published: true })
-    .populate({
-      path: 'schedules.resources',
-      populate: { path: 'resources' },
-      select: "username"
-    })
+    // .populate({
+    //   path: 'schedules.resources',
+    //   populate: { path: 'resources' },
+    //   select: "username"
+    // })
       .then(data => {
         res.send(data);
       })
@@ -224,12 +224,12 @@ exports.findAllPublished = (req, res) => {
             charge: { $sum: "$schedules.charge" },
           }
         },
-    ]).exec(function(err, doc) {
-      Project.populate(doc, {
+    ]).exec(function(err, data) {
+      /*Project.populate(doc, {
         path: 'schedules.resources',
         populate: { path: 'resources' },
         select: "username"
-        }, function(err, data) {
+        }, function(err, data) {*/
         if(err) {
             res.status(500).send({
               message:
@@ -240,5 +240,5 @@ exports.findAllPublished = (req, res) => {
           }
         })
       })
-    })
+    // })
   };

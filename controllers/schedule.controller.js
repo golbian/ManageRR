@@ -96,19 +96,20 @@ exports.findOne = (req, res) => {
       },{ useFindAndModify: false }
     )
       .then(data => {
+        console.log("HERE", data)
         if(req.body.isAdmin) {
-          for(const resource of req.body.resources) {
-            User.findOneAndUpdate({_id: resource._id},{$set: { value: resource.value }, $addToSet: { projects: id }},{ useFindAndModify: false }).then(data => {
-              if(!data) {
-                  console.log(`Cannot update User value with id=${resource._id} in schedule(${scheduleId}) for Project with id=${id}`)
-              } else console.log("User value was updated successfully.");
-            })
-            .catch(err => {
-              console.log(
-                "Error updating User value with id=" + resource._id
-              );
-            });
-          }
+          // for(const resource of req.body.resources) {
+          //   User.findOneAndUpdate({_id: resource._id},{$set: { value: resource.value }, $addToSet: { projects: id }},{ useFindAndModify: false }).then(data => {
+          //     if(!data) {
+          //         console.log(`Cannot update User value with id=${resource._id} in schedule(${scheduleId}) for Project with id=${id}`)
+          //     } else console.log("User value was updated successfully.");
+          //   })
+          //   .catch(err => {
+          //     console.log(
+          //       "Error updating User value with id=" + resource._id
+          //     );
+          //   });
+          // }
         }
         if (!data) {
           res.status(404).send({

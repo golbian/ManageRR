@@ -29,12 +29,7 @@ module.exports = mongoose => {
         start_date: mongoose.Schema.Types.Mixed,
         end_date: mongoose.Schema.Types.Mixed,
         end_date_revised: mongoose.Schema.Types.Mixed,
-        resources: [
-            resource_id = {
-              type: mongoose.Schema.Types.ObjectId,
-              ref: "user"
-            },
-          ],
+        resources: Array,
         duration: Number,
     });
 

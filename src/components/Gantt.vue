@@ -111,12 +111,18 @@ export default {
                 tasks.forEach(function(item) {
                     var assignments = gantt.getResourceAssignments(resource.id, item.id);
                     assignments.forEach(function(assignment){
-                        assignment.value = resource.value;
+                        for(let taskResource of item.resources) {
+                            if(taskResource.id == resource.id) {
+                                assignment.value = taskResource.value;
+                            }
+                        }
                         var task = gantt.getTask(assignment.task_id);
                         if(resource.type == "work"){
-                            result += assignment.value * 1;
+                            result += task.duration / item.charge * assignment.value;
+                            result = Math.round(result * 100) / 100;
                         }else{
-                            result += assignment.value / (task.duration || 1);
+                            result += task.duration / item.charge * assignment.value;
+                            result = Math.round(result * 100) / 100;
                         }
                     });
                 });
@@ -161,7 +167,7 @@ export default {
             var resourceConfig = {
                 scale_height: 30,
                 scales: [
-                    {unit: "day", step: 1, date: "%d %M"}
+                    {unit: "month", step: 1, format: "%M, %Y"},
                 ],
                 columns: [
                     {
@@ -172,12 +178,20 @@ export default {
                     {
                         name: "allocated", label: "Allocated", align:"left", width:100, template: function (resource) {
                             var assignments = gantt.getResourceAssignments(resource.id);
+                            console.log(assignments)
                             var result = 0;
                             assignments.forEach(function(assignment){
-                                assignment.value = resource.value;
                                 var task = gantt.getTask(assignment.task_id);
+                                for(let taskResource of task.resources) {
+                                    if(taskResource.id == assignment.resource_id) {
+                                        assignment.value = taskResource.value;
+                                    }
+                                }
+                                
                                 if(resource.type == "work"){
-                                    result += task.duration * assignment.value;
+                                    result += task.duration / task.charge * assignment.value;
+                                    result = Math.round(result * 100) / 100;
+                                    console.log(result)
                                 }else{
                                     result += assignment.value * 1;
                                 }
@@ -287,7 +301,7 @@ export default {
             data.id = user._id;
             data.text = user.username;
             data.unit = "hours/day";
-            data.value = user.value;
+            // data.value = user.value;
             data.type = "work";
             this.resources.push(data);
         }
@@ -351,7 +365,7 @@ export default {
                             '<i class="fas fa-times" data-action="delete"></i>'
                         );
                     }
-                }}
+                }},
             ];
 
         var filterValue = "";
@@ -490,131 +504,14 @@ export default {
 
         ProjectServices.getAllProject().then(response => {
             processData(response.data);
-
-            // for(const project of response.data) {
-            //     var dataset = {};
-            //     if(project.start_date == "") {
-            //         var startDate = formatDate(new Date, 'YYYY-MM-DD[T00:00:00.000Z]', 'DD-MM-YYYY');
-            //         var endDate = formatDate(new Date, 'YYYY-MM-DD[T00:00:00.000Z]', 'DD-MM-YYYY');;
-            //     } else {
-            //         var startDate = formatDate(project.start_date, 'YYYY-MM-DD[T00:00:00.000Z]', 'DD-MM-YYYY');
-            //         var endDate = formatDate(project.end_date, 'YYYY-MM-DD[T00:00:00.000Z]', 'DD-MM-YYYY');
-            //     }
-            //     dataset.id = project._id;
-            //     dataset.progress = project.progress;
-            //     dataset.type = project.type;
-            //     dataset.parent = project.parent;
-            //     dataset.text = project.name;
-            //     dataset.charge = project.charge;
-            //     dataset.start_date = startDate;
-            //     dataset.end_date = endDate;
-                
-            //     for(const schedule of project.schedules) {
-            //         if(schedule) {
-            //             if(schedule.start_date == "") {
-            //                 var scheduleStartDate = formatDate(new Date, 'YYYY-MM-DD[T00:00:00.000Z]', 'DD-MM-YYYY');
-            //                 var scheduleEndDate = formatDate(new Date, 'YYYY-MM-DD[T00:00:00.000Z]', 'DD-MM-YYYY');;
-            //             } else {
-            //                 var scheduleStartDate = formatDate(schedule.start_date, 'YYYY-MM-DD[T00:00:00.000Z]', 'DD-MM-YYYY');
-            //                 var scheduleEndDate = formatDate(schedule.end_date, 'YYYY-MM-DD[T00:00:00.000Z]', 'DD-MM-YYYY');
-            //             }
-                   
-            //             schedule.id = schedule._id;
-            //             schedule.start_date = scheduleStartDate;
-            //             schedule.end_date = scheduleEndDate;
-            //             schedule.text = schedule.name;
-            //             this.tasks.data.push(schedule);
-            //         }
-            //     }
-            //     for(const link of project.links){
-            //         link.id = link._id;
-            //         delete link._id;
-            //         this.tasks.links.push(link);
-            //     }
-            //     this.tasks.data.push(dataset);
-
-            //     console.log(this.tasks)
-            // }
-            // gantt.init(this.$refs.container);
-            // gantt.parse(this.tasks);
-        })/*.catch(err => {
+        }).catch(err => {
             if(err) {
 
-                ProjectServices.getAllOwnerProject(this.currentUser.id).then(response => {
-
-                    for(const project of response.data) {
-                        var dataset = {};
-                        var startDate = formatDate(project.start_date, 'YYYY-MM-DD[T00:00:00.000Z]', 'DD-MM-YYYY');
-                        var endDate = formatDate(project.end_date, 'YYYY-MM-DD[T00:00:00.000Z]', 'DD-MM-YYYY');
-
-                        dataset.id = project._id;
-                        dataset.progress = project.progress;
-                        dataset.type = project.type;
-                        dataset.parent = project.parent;
-                        dataset.text = project.name;
-                        dataset.start_date = startDate;
-                        dataset.end_date = endDate;
-                
-                        for(const schedule of project.schedules) {
-                            if(schedule) {
-                            var scheduleStartDate = formatDate(schedule.start_date, 'YYYY-MM-DD[T00:00:00.000Z]', 'DD-MM-YYYY');
-                            var scheduleEndDate = formatDate(schedule.end_date, 'YYYY-MM-DD[T00:00:00.000Z]', 'DD-MM-YYYY');
-                            schedule.id = schedule._id;
-                            schedule.start_date = scheduleStartDate;
-                            schedule.end_date = scheduleEndDate;
-                            schedule.text = schedule.name;
-                            this.tasks.data.push(schedule);
-                            }
-                        }
-                        for(const link of project.links){
-                            link.id = link._id;
-                            delete link._id;
-                            this.tasks.links.push(link);
-                        }
-                        this.tasks.data.push(dataset);
-                    }
-                    gantt.init(this.$refs.container);
-                    gantt.parse(this.tasks);
+                ProjectServices.getAllOwnerProject(this.currentUser.sigle).then(response => {
+                    processData(response.data);
                 });
-
-                ProjectServices.getAllPublishedProject().then(response => {
-
-                    for(const project of response.data) {
-                        var dataset = {};
-                        var startDate = formatDate(project.start_date, 'YYYY-MM-DD[T00:00:00.000Z]', 'DD-MM-YYYY');
-                        var endDate = formatDate(project.end_date, 'YYYY-MM-DD[T00:00:00.000Z]', 'DD-MM-YYYY');
-
-                        dataset.id = project._id;
-                        dataset.progress = project.progress;
-                        dataset.type = project.type;
-                        dataset.parent = project.parent;
-                        dataset.text = project.name;
-                        dataset.start_date = startDate;
-                        dataset.end_date = endDate;
-                
-                        for(const schedule of project.schedules) {
-                            if(schedule) {
-                            var scheduleStartDate = formatDate(schedule.start_date, 'YYYY-MM-DD[T00:00:00.000Z]', 'DD-MM-YYYY');
-                            var scheduleEndDate = formatDate(schedule.end_date, 'YYYY-MM-DD[T00:00:00.000Z]', 'DD-MM-YYYY');
-                            schedule.id = schedule._id;
-                            schedule.start_date = scheduleStartDate;
-                            schedule.end_date = scheduleEndDate;
-                            schedule.text = schedule.name;
-                            this.tasks.data.push(schedule);
-                            }
-                        }
-                        for(const link of project.links){
-                            link.id = link._id;
-                            delete link._id;
-                            this.tasks.links.push(link);
-                        }
-                        this.tasks.data.push(dataset);
-                    }
-                    gantt.init(this.$refs.container);
-                    gantt.parse(this.tasks);
-                })
             }
-        });*/
+        });
 
 gantt.createDataProcessor(function(entity, action, data, id){
     function getService(type) {
@@ -634,7 +531,6 @@ gantt.createDataProcessor(function(entity, action, data, id){
 
     switch (action) {
         case "update":
-
             if(data.parent == '0') {
                 data.start_date = formatDate(data.start_date, 'DD-MM-YYYY', 'YYYY-MM-DD[T00:00:00.000Z]');
                 data.end_date = formatDate(data.end_date, 'DD-MM-YYYY', 'YYYY-MM-DD[T00:00:00.000Z]');
@@ -644,15 +540,6 @@ gantt.createDataProcessor(function(entity, action, data, id){
                 delete data.text;
                 delete data["!nativeeditor_status"];
                 return getService(data.type).update(data.id , data);
-                    // ProjectServices.updateProject(id,data).then(success => {
-                    //     if(success) {
-                    //         gantt.message({type:"success", text:"Project has been updated successfully"})
-                    //     }
-                    // }).catch(err => {
-                    //     if(err) {
-                    //         gantt.message({type:"error", text:"Something went wrong"})
-                    //     }
-                    // })
             } else {
                 gantt.eachParent((task) => {
                     if(task.parent == '0') {
@@ -665,19 +552,10 @@ gantt.createDataProcessor(function(entity, action, data, id){
                         delete data["!nativeeditor_status"];
                         for(const resource of data.resources) {
                             resource._id = resource.resource_id;
+                            console.log(resource)
                         }
 
                         return getService(data.type).update(data.id , data);
-                                
-                        // ScheduleServices.updateSchedule(project._id, project).then(success => {
-                        //     if(success) {
-                        //         gantt.message({type:"success", text:"Task has been updated successfully"})
-                        //     }
-                        // }).catch(err => {
-                        //     if(err) {
-                        //         gantt.message({type:"error", text:"Something went wrong"})
-                        //     }
-                        // })
                     }
                 }, data.id);
             }
@@ -714,7 +592,8 @@ gantt.createDataProcessor(function(entity, action, data, id){
                     //         project.schedule.nestedLevel = nestedLevel;
                     //         project.schedule.type = data.type;
                     //         project.schedule.name = data.text;
-                    //         project.schedule.start_date = formatDate(data.start_date, 'DD-MM-YYYY', 'YYYY-MM-DD[T00:00:00.000Z]');                            project.schedule.end_date = formatDate(data.end_date, 'DD-MM-YYYY', 'YYYY-MM-DD[T00:00:00.000Z]');
+                    //         project.schedule.start_date = formatDate(data.start_date, 'DD-MM-YYYY', 'YYYY-MM-DD[T00:00:00.000Z]');
+                    //         project.schedule.end_date = formatDate(data.end_date, 'DD-MM-YYYY', 'YYYY-MM-DD[T00:00:00.000Z]');
                     //         project.schedule.end_date_revised = null;
                     //         for(var resource of project.schedule.resources) {
                     //             resourceTab.push(resource.resource_id)
@@ -738,7 +617,12 @@ gantt.createDataProcessor(function(entity, action, data, id){
                             data.end_date = formatDate(data.end_date, 'DD-MM-YYYY', 'YYYY-MM-DD[T00:00:00.000Z]');
                             data.end_date_revised = null;
                             for(var resource of data.resources) {
-                                resourceTab.push(resource.resource_id)
+                                var resourceToPush;
+                                resourceToPush = {
+                                    value : resource.value,
+                                    resource_id: resource.resource_id
+                                }
+                                resourceTab.push(resourceToPush);
                             }
                             data.resources = resourceTab;
                             // delete data.id;
@@ -767,240 +651,14 @@ gantt.createDataProcessor(function(entity, action, data, id){
                             }
 
                                 getService(data.type).delete(req)
-                            // ScheduleServices.deleteSchedule(req).then(success => {
-                            //     if(success) {
-                            //         gantt.message({type:"success", text:"Cascading elements has been deleted"})
-                            //     }
-                            // }).catch(err => {
-                            //     if(err) {
-                            //         gantt.message({type:"error", text:"Something went wrong"})
-                            //     }
-                            // })
                         }
 
                         console.log(data)
 
                         return getService(data.type).delete(task)
-                        // ScheduleServices.deleteSchedule(data).then(success => {
-                        //     if(success) {
-                        //         gantt.message({type:"success", text:"Schedule has been deleted successfully"})
-                        //     }
-                        // }).catch(err => {
-                        //     if(err) {
-                        //         gantt.message({type:"error", text:"Something went wrong"})
-                        //     }
-                        // })
                     }
-                    break;
     }
 });
-
-        // gantt.createDataProcessor({ 
-        //     task: {
-        //         create: (data) => {
-        //             if(data.parent == '0' || data.parent == ""){
-        //                 data.start_date = formatDate(data.start_date, 'DD-MM-YYYY', 'YYYY-MM-DD[T00:00:00.000Z]');
-        //                 data.end_date = formatDate(data.end_date, 'DD-MM-YYYY', 'YYYY-MM-DD[T00:00:00.000Z]');
-        //                 data.end_date_revised = null;
-        //                 data.name = data.text;
-        //                 data.type = "project";
-        //                 data.published = false;
-        //                 data.status = "Not Started";
-        //                 // delete data.id;
-        //                 delete data.text;
-        //                 delete data["!nativeeditor_status"];
-        //                 var initProjectData = new Project;
-        //                 Object.assign(data, initProjectData);
-        //                 ProjectServices.createProject(data).then(success => {
-        //                     if(success) {
-        //                         gantt.message({type:"success", text:"Project has been created successfully"})
-        //                     }
-        //                 }).catch(err => {
-        //                     if(err) {
-        //                         gantt.message({type:"error", text:"Something went wrong"})
-        //                     }
-        //                 })
-        //             } else {
-        //                     var nestedLevel = 0;
-        //                     gantt.eachParent((task) => {
-        //                         nestedLevel ++;
-        //                         if(task.parent == '0' || task.parent == "") {
-        //                             var project = {};
-        //                             var resourceTab = [];
-        //                             project.schedule = {};
-        //                             project._id = String(task.id);
-        //                             project.schedule = data;
-        //                             project.schedule.nestedLevel = nestedLevel;
-        //                             project.schedule.type = data.type;
-        //                             project.schedule.name = data.text;
-        //                             project.schedule.start_date = formatDate(data.start_date, 'DD-MM-YYYY', 'YYYY-MM-DD[T00:00:00.000Z]');
-        //                             project.schedule.end_date = formatDate(data.end_date, 'DD-MM-YYYY', 'YYYY-MM-DD[T00:00:00.000Z]');
-        //                             project.schedule.end_date_revised = null;
-        //                             for(var resource of project.schedule.resources) {
-        //                                 resourceTab.push(resource.resource_id)
-        //                             }
-        //                             project.schedule.resources = resourceTab;
-        //                             delete project.schedule.id;
-        //                             delete project.schedule.text;
-        //                             delete project.schedule["!nativeeditor_status"];
-        //                             var initScheduleData = new Schedule;
-        //                             Object.assign(project.schedule, initScheduleData);
-        //                             ScheduleServices.createSchedule(project).then(response => {
-        //                                 gantt.message({type:"success", text:"Task has been created successfully"})
-                                        
-        //                             }).catch(err => {
-        //                                 if(err) {
-        //                                     gantt.message({type:"error", text:"Something went wrong"})
-        //                                 }
-        //                             })
-        //                         }
-        //                     }, data.id);
-        //             }
-        //         },
-        //         update: (data, id) => {
-        //             if(data.parent == '0'){
-        //                 data.start_date = formatDate(data.start_date, 'DD-MM-YYYY', 'YYYY-MM-DD[T00:00:00.000Z]');
-        //                 data.end_date = formatDate(data.end_date, 'DD-MM-YYYY', 'YYYY-MM-DD[T00:00:00.000Z]');
-        //                 data.projectName = data.text;
-        //                 data.pm = data.resources;
-        //                 delete data.text;
-        //                 delete data["!nativeeditor_status"];
-        //                 ProjectServices.updateProject(id,data).then(success => {
-        //                     if(success) {
-        //                         gantt.message({type:"success", text:"Project has been updated successfully"})
-        //                     }
-        //                 }).catch(err => {
-        //                     if(err) {
-        //                         gantt.message({type:"error", text:"Something went wrong"})
-        //                     }
-        //                 })
-        //             } else {
-        //                 gantt.eachParent((task) => {
-        //                     if(task.parent == '0') {
-        //                         var project = {};
-        //                         project.schedule = {};
-        //                         project._id = String(task.id);
-        //                         project.schedule = data;
-        //                         project.schedule.type = data.type;
-        //                         // project.schedule._id = String(data.id);
-        //                         project.schedule.name = data.text;
-        //                         project.schedule.start_date = formatDate(data.start_date, 'DD-MM-YYYY', 'YYYY-MM-DD[T00:00:00.000Z]');
-        //                         project.schedule.end_date = formatDate(data.end_date, 'DD-MM-YYYY', 'YYYY-MM-DD[T00:00:00.000Z]');
-        //                         delete project.schedule.id;
-        //                         delete project.schedule.text;
-        //                         delete project.schedule["!nativeeditor_status"];
-        //                         for(const resource of project.schedule.resources) {
-        //                             resource._id = resource.resource_id;
-        //                         }
-                                
-        //                         ScheduleServices.updateSchedule(project._id, project).then(success => {
-        //                             if(success) {
-        //                                 gantt.message({type:"success", text:"Task has been updated successfully"})
-        //                             }
-        //                         }).catch(err => {
-        //                             if(err) {
-        //                                 gantt.message({type:"error", text:"Something went wrong"})
-        //                             }
-        //                         })
-        //                     }
-        //                 }, data.id);
-        //             }
-                    
-        //         },
-        //         delete: function(id) {
-        //             console.log(id);
-        //         }
-        //     },
-        //     link: {
-        //         create: function(link) {
-        //              gantt.eachParent(function(task){
-        //                 if(task.parent == '0') {
-        //                 var project = {};
-        //                 project._id = String(task.id);
-        //                 project.link = link;
-        //                 project.link._id = link.id;
-        //                 delete project.link.id;
-        //                 delete link["!nativeeditor_status"];
-        //                 LinkServices.createLink(project).then(success => {
-        //                     if(success) {
-        //                         gantt.message({type:"success", text:"Link was created successfully"})
-        //                     }
-        //                 }).catch(err => {
-        //                     if(err) {
-        //                         gantt.message({type:"error", text:"Something went wrong"})
-        //                     }
-        //                 })
-        //                 }
-        //             }, link.source);
-                    
-        //         },
-        //         update: function(link) {
-        //             gantt.eachParent(function(task){
-        //                 if(task.parent == '0') {
-        //                 var project = {};
-        //                 project._id = String(task.id);
-        //                 project.link = link;
-        //                 project.link._id = link.id;
-        //                 delete project.link.id;
-        //                 delete link["!nativeeditor_status"];
-        //                 LinkServices.updateLink(project._id, project).then(success => {
-        //                     if(success) {
-        //                         gantt.message({type:"success", text:"Link has been updated successfully"})
-        //                     }
-        //                 }).catch(err => {
-        //                     if(err) {
-        //                         gantt.message({type:"error", text:"Something went wrong"})
-        //                     }
-        //                 })
-        //                 }
-        //             }, link.source);
-        //         },
-        //         delete: function(id) {
-        //             console.log(id);
-        //         }
-        //     }
-        // });
-
-        // gantt.attachEvent("onBeforeTaskDelete", function(id, item){
-        //     if(item.parent == '0') {
-        //         ProjectServices.deleteProject(id).then(gantt.message({type:"success", text:"Project has been deleted successfully"}))
-        //         UserServices.deleteProject(id).then(gantt.message({type:"success", text:"Project has been deleted successfully from Users"}))
-        //     } else {
-        //         gantt.eachParent(function(task){
-        //             if(task.parent == '0') {
-        //                 var data = {};
-        //                 data.projectId = String(task.id);
-        //                 data.scheduleId = id;
-        //                 var childrens = gantt.getChildren(id);
-        //                 for(const child of childrens) {
-        //                     var req = {
-        //                         projectId: task.id,
-        //                         scheduleId: child
-        //                     }
-        //                     ScheduleServices.deleteSchedule(req).then(success => {
-        //                         if(success) {
-        //                             gantt.message({type:"success", text:"Cascading elements has been deleted"})
-        //                         }
-        //                     }).catch(err => {
-        //                         if(err) {
-        //                             gantt.message({type:"error", text:"Something went wrong"})
-        //                         }
-        //                     })
-        //                 }
-        //                 ScheduleServices.deleteSchedule(data).then(success => {
-        //                     if(success) {
-        //                         gantt.message({type:"success", text:"Schedule has been deleted successfully"})
-        //                     }
-        //                 }).catch(err => {
-        //                     if(err) {
-        //                         gantt.message({type:"error", text:"Something went wrong"})
-        //                     }
-        //                 })
-        //             }
-        //         }, id)
-        //     }
-        //     return true;
-        // });
 
         gantt.attachEvent("onBeforeLinkDelete", function(id,item){
             gantt.eachParent(function(task){
