@@ -22,7 +22,7 @@ db.mongoose
   });
 
 var corsOptions = {
-  origin: "https://localhost:8081"
+  origin: "https://manage-rr.eu"
 };
 
 app.use(cors(corsOptions));
