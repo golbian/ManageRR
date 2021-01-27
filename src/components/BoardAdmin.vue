@@ -174,10 +174,12 @@ export default {
         template += "<div class='d-block w-25 mt-4'>";
         for(const role of item.roles){
           if(role.name === "user") {
-            template += '<div class="badge badge-pill badge-primary">User</div>'
-          } else if(role.name === "moderator") {
-            template += '<span class="badge badge-pill badge-warning ml-1">Moderator</span>'
-          } else {
+            template += '<div class="badge badge-pill badge-primary">Consultant</div>'
+          } else if(role.name === "pm") {
+            template += '<span class="badge badge-pill badge-warning ml-1">PM</span>'
+          } else if(role.name === "kam") {
+            template += '<span class="badge badge-pill badge-warning ml-1">KAM</span>'
+          }else {
             template += '<span class="badge badge-pill badge-danger ml-1">Admin</span>'
           }
         }
@@ -269,13 +271,19 @@ export default {
       })
     },
     setColor(name) {
-      if(name === "admin") {
+      switch(name) {
+        case "admin":
         return "#dc3545"
-      } 
-      else if (name === "moderator") {
+        break;
+        case "pm":
         return "#ffc107"
-      } else {
+        break;
+        case "kam":
+        return "#ffc107"
+        break;
+        case "user":
         return "#007bff"
+        break;
       }
     },
     setInitState(role) {

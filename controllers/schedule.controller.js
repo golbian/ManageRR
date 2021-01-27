@@ -96,7 +96,6 @@ exports.findOne = (req, res) => {
       },{ useFindAndModify: false }
     )
       .then(data => {
-        console.log("HERE", data)
         if(req.body.isAdmin) {
           // for(const resource of req.body.resources) {
           //   User.findOneAndUpdate({_id: resource._id},{$set: { value: resource.value }, $addToSet: { projects: id }},{ useFindAndModify: false }).then(data => {

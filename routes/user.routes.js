@@ -19,7 +19,7 @@ module.exports = app => {
   );
 
   // Find all users
-  router.get("/", [authJwt.verifyToken, authJwt.isModerator], users.findAll);
+  router.get("/", [authJwt.verifyToken, authJwt.isPm], users.findAll);
 
   // Find a single user with id
   router.get("/:id", [authJwt.verifyToken], users.findOne);

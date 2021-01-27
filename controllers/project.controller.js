@@ -2,6 +2,13 @@ const db = require("../models");
 const mongoose = require("mongoose");
 const Project = db.project;
 
+var getName = function( search ) {
+  return search == undefined ? null
+       : search == "undefined" ? null
+       : search == "" ? null
+       : search 
+}
+
 // Create and Save a new Project
 exports.create = (req, res) => {
    // Validate request
@@ -50,32 +57,50 @@ exports.create = (req, res) => {
 
 // Retrieve all Projects from the database.
 exports.findAll = (req, res) => {
-  
-    Project.find()
-.then(() => {
-        return Project.aggregate([
-          {
-            $addFields: {
-              charge: { $sum: "$schedules.charge" },
-            }
-          },
-      ]).exec(function(err, data) {
-          /*Project.populate(doc , {
-            path: 'schedules.resources',
-            populate: { path: 'resources' }
-          },
-          function(err, data) {*/
-            if(!err) {
-              res.send(data);
-            } else {
-              res.status(500).send({
-                message:
-                  err.message || "Some error occurred while retrieving projects."
-              });
-            }
-          });
+
+    if(getName(req.query.search) === null) {
+      var aggregation = [
+        { $addFields: { total: { $sum: "$schedules.charge" } } },
+        { $sort: { [req.query.sort_type]: parseInt(req.query.sort_value)} }
+      ]
+    } else {
+      var aggregation = [
+        { $match: { $text: { $search: getName(req.query.search) } } },
+        { $addFields: { total: { $sum: "$schedules.charge" } } },
+        { $sort: { [req.query.sort_type]: parseInt(req.query.sort_value)} }
+      ]
+    }
+
+    Project.find().then(()=>{
+      return Project.aggregate(aggregation).exec(function(err, data) {
+if(err) {
+            res.status(500).send({
+              message:
+                err.message || "Some error occurred while retrieving projects."
+            });
+          } else {
+            res.send(data);
+          }
+        })
       })
-  // });
+
+  //     // exec(function(err, data) {
+  //           /*Project.populate(doc , {
+  //             path: 'schedules.resources',
+  //             populate: { path: 'resources' }
+  //           },
+  //           function(err, data) {*/
+  //             // if(!err) {
+  //             //   res.send(data);
+  //             // } else {
+  //             //   res.status(500).send({
+  //             //     message:
+  //             //       err.message || "Some error occurred while retrieving projects."
+  //             //   });
+  //             // }
+  //           // });
+  //     // })
+  // // });
 };
 
 // Find a single Project with an id
@@ -214,14 +239,72 @@ exports.findAllPublished = (req, res) => {
       });
   };
 
-  exports.findAllOwnerProject = (req, res) => {
-    const pm = req.params.user;
+  exports.findAllPmProject = (req, res) => {
+    const pm = req.params.pm;
     Project.find().then(()=>{
       return Project.aggregate([
         { $match: { pm: pm } },
         {
           $addFields: {
-            charge: { $sum: "$schedules.charge" },
+            total: { $sum: "$schedules.charge" },
+          }
+        },
+    ]).exec(function(err, data) {
+      /*Project.populate(doc, {
+        path: 'schedules.resources',
+        populate: { path: 'resources' },
+        select: "username"
+        }, function(err, data) {*/
+        if(err) {
+            res.status(500).send({
+              message:
+                err.message || "Some error occurred while retrieving projects."
+            });
+          } else {
+            res.send(data);
+          }
+        })
+      })
+    // })
+  };
+
+  exports.findAllKamProject = (req, res) => {
+    const kam = req.params.kam;
+    Project.find().then(()=>{
+      return Project.aggregate([
+        { $match: { kam: kam } },
+        {
+          $addFields: {
+            total: { $sum: "$schedules.charge" },
+          }
+        },
+    ]).exec(function(err, data) {
+      /*Project.populate(doc, {
+        path: 'schedules.resources',
+        populate: { path: 'resources' },
+        select: "username"
+        }, function(err, data) {*/
+        if(err) {
+            res.status(500).send({
+              message:
+                err.message || "Some error occurred while retrieving projects."
+            });
+          } else {
+            res.send(data);
+          }
+        })
+      })
+    // })
+  };
+
+  exports.findAllResourceProject = (req, res) => {
+    const resource = req.params.resource;
+    Project.find().then(()=>{
+      return Project.aggregate([
+        { $match: { "$schedules.$resources.resource_id": resource } },
+        {
+          $addFields: {
+            total: { $sum: "$schedules.charge" },
           }
         },
     ]).exec(function(err, data) {

@@ -13,8 +13,14 @@ module.exports = app => {
     // Retrieve all published Projects
     router.get("/published",[authJwt.verifyToken], projects.findAllPublished);
 
-    //Retrieve all Owner's projects
-    router.get("/user/:user",[authJwt.verifyToken, authJwt.isModerator], projects.findAllOwnerProject);
+    //Retrieve all Pm's projects
+    router.get("/pm/:pm",[authJwt.verifyToken, authJwt.isPm], projects.findAllPmProject);
+
+    //Retrieve all Kam's projects
+    router.get("/kam/:kam",[authJwt.verifyToken, authJwt.isKam], projects.findAllKamProject);
+
+    //Retrieve all Resource's projects
+    router.get("/resource/:resource",[authJwt.verifyToken], projects.findAllResourceProject);
   
     // Retrieve a single Project with id
     router.get("/:id",[authJwt.verifyToken, authJwt.isModerator], projects.findOne);

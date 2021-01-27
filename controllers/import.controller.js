@@ -58,6 +58,8 @@ exports.upload =  (req, res) => {
       duration: item["Durée (mois)"],
     }
 
+    console.log(item)
+
     data.start_date = moment(data.start_date, '').format('YYYY-MM-DD[T00:00:00.000Z]');
     data.end_date = moment(data.end_date, '').format('YYYY-MM-DD[T00:00:00.000Z]');
     data.end_date_revised = moment(data.end_date_revised, '').format('YYYY-MM-DD[T00:00:00.000Z]');
@@ -67,7 +69,7 @@ exports.upload =  (req, res) => {
         data[i] = "";
       }
         var wbs = data.wbs + "";
-        // data._id = wbs;
+        data._id = wbs;
         var parts = wbs.split(".");
         parts.pop();
         data.parent = parts.join(".");
@@ -88,28 +90,28 @@ exports.upload =  (req, res) => {
     }
   }
 
-  // for(const project of projects) {
-  //   if(project.charge !== "TBD" || project.charge !== "") {
-  //     project.charge = parseInt(project.charge)
-  //   } else {
-  //     project.charge = 0;
-  //   }
-  //   if(project.charge === null) {
-  //     project.charge = 0;
-  //   }
-  //   for(const schedule of project.schedules) {
-  //     if (schedule) {
-  //       if(schedule.charge !== "TBD" || schedule.charge !== "") {
-  //         schedule.charge = parseInt(schedule.charge)
-  //       } else {
-  //         schedule.charge = 0;
-  //       }
-  //       if(schedule.charge === null) {
-  //         schedule.charge = 0;
-  //       }
-  //     }
-  //   }
-  // }
+  for(const project of projects) {
+    if(project.charge !== "TBD" || project.charge !== "") {
+      project.charge = parseInt(project.charge)
+    } else {
+      project.charge = 0;
+    }
+    if(project.charge === null) {
+      project.charge = 0;
+    }
+    for(const schedule of project.schedules) {
+      if (schedule) {
+        if(schedule.charge !== "TBD" || schedule.charge !== "") {
+          schedule.charge = parseInt(schedule.charge)
+        } else {
+          schedule.charge = 0;
+        }
+        if(schedule.charge === null) {
+          schedule.charge = 0;
+        }
+      }
+    }
+  }
 
   // Save Project in the database
   Project

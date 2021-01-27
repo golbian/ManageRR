@@ -22,7 +22,7 @@ db.mongoose
   });
 
 var corsOptions = {
-  origin: "https://manage-rr.eu"
+  origin: "https://localhost:8081"
 };
 
 app.use(cors(corsOptions));
@@ -43,7 +43,7 @@ require("./routes/auth.routes")(app);
 require('./routes/user.routes')(app);
 require('./routes/roles.routes')(app);
 require('./routes/project.routes')(app);
-require('./routes/task.routes')(app);
+// require('./routes/task.routes')(app);
 require('./routes/schedule.routes')(app);
 require('./routes/event.routes')(app);
 require('./routes/link.routes')(app);
@@ -57,6 +57,12 @@ function initial() {
         readOnly: true,
         canCreate: false,
         canUpdate: false,
+        canUpdateStage: false,
+        financial: false,
+        financialGlobal: false,
+        pmResource: false,
+        kamResource: false,
+        resource: false,
       }).save(err => {
         if (err) {
           console.log("error", err);
@@ -66,10 +72,16 @@ function initial() {
       });
 
       new Role({
-        name: "moderator",
+        name: "pm",
         readOnly: false,
-        canCreate: false,
+        canCreate: true,
         canUpdate: true,
+        canUpdateStage: true,
+        financial: false,
+        financialGlobal: false,
+        pmResource: true,
+        kamResource: false,
+        resource: false,
       }).save(err => {
         if (err) {
           console.log("error", err);
@@ -79,10 +91,35 @@ function initial() {
       });
 
       new Role({
+        name: "kam",
+        readOnly: false,
+        canCreate: true,
+        canUpdate: true,
+        canUpdateStage: true,
+        financial: true,
+        financialGlobal: false,
+        pmResource: true,
+        kamResource: true,
+        resource: false,
+      }).save(err => {
+        if (err) {
+          console.log("error", err);
+        }
+
+        console.log("added 'admin' to roles collection");
+      });
+
+      new Role({
         name: "admin",
         readOnly: false,
         canCreate: true,
         canUpdate: true,
+        canUpdateStage: true,
+        financial: true,
+        financialGlobal: true,
+        pmResource: true,
+        kamResource: true,
+        resource: true,
       }).save(err => {
         if (err) {
           console.log("error", err);

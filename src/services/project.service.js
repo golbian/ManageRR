@@ -3,16 +3,30 @@ import authHeader from './auth-header';
 
 class projectServices {
 
-    getAllProject() {
-      return http.get(`/projects`,{ headers: authHeader() });
+    getAllProject(filters) {
+      const query = new URLSearchParams({
+        search: filters.search,
+        sort_value: filters.sort.value,
+        sort_type: filters.sort.type,
+      }).toString();
+
+        return http.get(`/projects?`+ query , { headers: authHeader() });
     }
 
     getAllPublishedProject() {
       return http.get("/projects/published",{ headers: authHeader() });
     }
 
-    getAllOwnerProject(user) {
-      return http.get(`/projects/user/${user}`,{ headers: authHeader() });
+    getAllPmProject(pm) {
+      return http.get(`/projects/pm/${pm}`,{ headers: authHeader() });
+    }
+
+    getAllKamProject(kam) {
+      return http.get(`/projects/kam/${kam}`,{ headers: authHeader() });
+    }
+
+    findAllRessourceProject(resource) {
+      return http.get(`/projects/resource/${resource}`,{ headers: authHeader() });
     }
 
     async getProject(id) {
