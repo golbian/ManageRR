@@ -13,7 +13,7 @@ npm install
 
 ## initiate the database
 ```
-mongorestore --db=manage_rr dump/manage_rr
+mongorestore --db=manage_rr --archive="manage_rr"
 ```
 
 
