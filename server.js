@@ -43,7 +43,6 @@ require("./routes/auth.routes")(app);
 require('./routes/user.routes')(app);
 require('./routes/roles.routes')(app);
 require('./routes/project.routes')(app);
-// require('./routes/task.routes')(app);
 require('./routes/schedule.routes')(app);
 require('./routes/event.routes')(app);
 require('./routes/link.routes')(app);
