@@ -125,7 +125,7 @@ export default {
                 css: "dhx_layout-cell--border_bottom",
                 width: "18vw",
                 height: "60px",
-					    },
+              },
               {
                 id: "toolbar",
                 css: "dhx_layout-cell--border_bottom",
@@ -138,28 +138,28 @@ export default {
                 css: "dhx_layout-cell--border_bottom header",
                 width: "50vw",
                 height: "60px"
-					    },
-						]},
+              },
+            ]},
             {
-                  id: "UserList",
-                  css: "dhx_layout-cell--border_right",
-                  width: "35vw",
-                  height: "100vh"
-							  },
-                {
-									id: "RoleList",
-                  width:"50vw",
-                  height: "100vh",
-                  css: "scheduler"
-								},
-					{
-						id: "footer",
-						html: "Footer",
-						css: "dhx_layout-cell--border_top",
-						height: "60px"
-					}
-				]
-			};
+              id: "UserList",
+              css: "dhx_layout-cell--border_right",
+              width: "35vw",
+              height: "100vh"
+            },
+            {
+              id: "RoleList",
+              width:"50vw",
+              height: "100vh",
+              css: "scheduler"
+            },
+            {
+              id: "footer",
+              html: "Footer",
+              css: "dhx_layout-cell--border_top",
+              height: "60px"
+            }
+          ]
+        };
 
     var layout = new LayoutDHX("layout_container", config);
     this.list = new ListDHX(null, {
@@ -216,7 +216,7 @@ export default {
 
     this.list.data.map(function (item, i) {
       if (!(i % 2)) {
-          list.data.update(item._id, {css: "bg-gray"})
+          this.list.data.update(item._id, {css: "bg-gray"})
       }
     })
 
@@ -240,12 +240,12 @@ export default {
       this.list.data.filter();
     });
 
-    this.list.events.on("DoubleClick", (id, e) => {
+    this.list.events.on("DoubleClick", (id) => {
       this.editUser = this.list.data.getItem(id);
       this.$modal.show('userEditModal');
     });
 
-    this.toolbar.events.on("Click", (id,e) => {
+    this.toolbar.events.on("Click", (id) => {
       if(id === "new") {
         this.$modal.show("registerModal")
       } else if (id === "delete") {
@@ -266,26 +266,23 @@ export default {
     updateUser(data) {
       delete data.$selected
       UserService.updateUser(this.editUser._id, data).then(response => {
+        console.log(response)
         this.$modal.hide('userEditModal')
         this.list.paint()
       })
     },
     setColor(name) {
-      switch(name) {
-        case "admin":
+      if(name === "admin") {
         return "#dc3545"
-        break;
-        case "pm":
+      } else if(name === "pm") {
         return "#ffc107"
-        break;
-        case "kam":
+      } else if(name === "kam") {
         return "#ffc107"
-        break;
-        case "user":
+      } else if(name === "user") {
         return "#007bff"
-        break;
       }
     },
+
     setInitState(role) {
       var result = this.editUser.roles.find(check => check._id == role._id)
       if(result === undefined) {
