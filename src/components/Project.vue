@@ -7,9 +7,8 @@
 </template>
 <script>
 import {Gantt} from 'dhtmlx-gantt';
-import { Grid as GridDHX} from "dhx-grid";
+import { Grid as GridDHX} from "dhx-suite";
 import {Layout as LayoutDHX } from 'dhx-suite';
-import "dhx-grid/codebase/grid.min.css";
 import moment from 'moment';
 import ProjectServices from '../services/project.service';
 import ScheduleServices from '../services/schedule.service';
@@ -708,6 +707,7 @@ export default {
 <style>
     @import "~dhtmlx-gantt/codebase/dhtmlxgantt.css";
     @import "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.0-2/css/all.min.css";
+     @import "~dhx-suite/codebase/suite.min.css";
 
 html, body{
   margin:0;

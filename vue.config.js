@@ -1,10 +1,11 @@
 module.exports = {
     devServer: {
-    //   publicPath: process.env.NODE_ENV === 'production'
-    // ? '/ManageRR/'
-    // : '/',
+      publicPath: '/',
       port: process.env.PORT_VUE,
-      https: true
+      https: true,
+      overlay: {
+        // warnings: true,
+        // errors: true
+      }
     },
-    lintOnSave: 'warning'
   }

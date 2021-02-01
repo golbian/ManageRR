@@ -3,7 +3,7 @@
         <div id="layout">
             <modal name="lightboxModal" height="auto" :scrollable="true">
                     <form name="form" id="form"  class="m-5" v-on:submit.prevent="submitEvent(editedEvent)">
-                    <h4 v-model="editedEvent.name" class="text-center">{{editedEvent.name}}</h4>
+                    <h4 class="text-center">{{editedEvent.name}}</h4>
                     <div class="form-group">
                             <label for="text">Name</label>
                             <input
@@ -79,25 +79,25 @@
 </template>
 
 <script>
-import "dhtmlx-scheduler";
+import scheduler from "dhtmlx-scheduler";
 import 'dhtmlx-scheduler/codebase/ext/dhtmlxscheduler_limit.js';
 import 'dhtmlx-scheduler/codebase/ext/dhtmlxscheduler_editors.js';
 import 'dhtmlx-scheduler/codebase/ext/dhtmlxscheduler_outerdrag.js';
 import 'dhtmlx-scheduler/codebase/ext/dhtmlxscheduler_tooltip.js';
-import { Tree as TreeDHX} from 'dhx-suite';
-import {Layout as LayoutDHX } from 'dhx-suite';
-import {Toolbar as ToolbarDHX} from 'dhx-suite';
+import { Tree as TreeDHX, Layout as LayoutDHX} from 'dhx-suite';
+// import {Layout as LayoutDHX } from 'dhx-suite';
+// import {Toolbar as ToolbarDHX} from 'dhx-suite';
 
 import ProjectServices from '../services/project.service';
 import EventServices from '../services/event.service';
-import ScheduleServices from '../services/schedule.service';
-import UserServices from '../services/user.service';
+// import ScheduleServices from '../services/schedule.service';
+// import UserServices from '../services/user.service';
 import moment from 'moment';
 export default {
     data () {
         return {
             tree: null,
-            scheduler: null,
+            scheduler: scheduler,
             timePicker: null,
             documents: [],
             user: {},
@@ -125,9 +125,9 @@ export default {
     },
     created: function() {
 
-        scheduler.clearAll();
+        this.scheduler.clearAll();
 
-        scheduler.deleteMarkedTimespan()
+        this.scheduler.deleteMarkedTimespan()
 
         var dataProcessing = (response) => {
             for (const project of response) {
@@ -178,7 +178,7 @@ export default {
 
     mounted: function () {
 
-        scheduler.templates.event_text=function(start, end, event){
+        this.scheduler.templates.event_text=function(start, end, event){
             if (event.insitu){
                 return "<p class='badge'>"+event.client+"</p><p class='badge'> In-situ</p><p class='badge'>"+event.tps+"</p>"
             } else {
@@ -186,7 +186,7 @@ export default {
             }
         }
 
-        scheduler.templates.event_bar_text = function(start,end,event){
+        this.scheduler.templates.event_bar_text = function(start,end,event){
             if (event.insitu){
                 return "<p class='badge'>"+event.client+"</p><p class='badge'> In-situ</p><p class='badge'>"+event.tps+"</p>"
             } else {
@@ -248,8 +248,7 @@ export default {
         // });
 
         this.tree.selection.events.on("AfterSelect", (id) => {
-            var event = this.tree.selection.getItem();
-
+            var event = this.tree.selection.getItem(id);
 
             this.focusedItem = {
                 text: event.value,
@@ -260,8 +259,8 @@ export default {
             }
         });
 
-        scheduler.skin = "material";
-        scheduler.config.header = [
+        this.scheduler.skin = "material";
+        this.scheduler.config.header = [
             "week",
             "month",
             "date",
@@ -274,28 +273,28 @@ export default {
         
         // scheduler.init("scheduler", new Date(), "week");
 
-        scheduler.attachEvent("onSchedulerReady", () => {
-            scheduler.templates.event_bar_date = function(start,end,event){
+        this.scheduler.attachEvent("onSchedulerReady", () => {
+            this.scheduler.templates.event_bar_date = function(start,end,event){
                 return "• <b>"+event.tps+" hours</b> ";
             };
             requestAnimationFrame(() => {
-            scheduler.setCurrentView(new Date(), "month");
+            this.scheduler.setCurrentView(new Date(), "month");
             });
         });
 
         layout.getCell("tree-cell").attach(this.tree);
-        layout.getCell("scheduler-cell").attach(scheduler);
+        layout.getCell("scheduler-cell").attach(this.scheduler);
 
-        scheduler.config.first_hour = 9;
-        scheduler.config.last_hour = 20;
-        scheduler.config.container_autoresize = true;
-        scheduler.config.dblclick_create = true;
-        scheduler.config.details_on_create = true;
-        scheduler.config.details_on_dblclick = true;
-        scheduler.config.responsive_lightbox = true;
-        scheduler.config.touch_tooltip = false;
+        this.scheduler.config.first_hour = 9;
+        this.scheduler.config.last_hour = 20;
+        this.scheduler.config.container_autoresize = true;
+        this.scheduler.config.dblclick_create = true;
+        this.scheduler.config.details_on_create = true;
+        this.scheduler.config.details_on_dblclick = true;
+        this.scheduler.config.responsive_lightbox = true;
+        this.scheduler.config.touch_tooltip = false;
 
-        scheduler.attachEvent("onBeforeLightbox", (id) => {
+        this.scheduler.attachEvent("onBeforeLightbox", (id) => {
             this.$modal.show('lightboxModal')
             var event = this.getEvent(id);
             if(event.insitu === null || event.insitu === undefined) {
@@ -336,14 +335,14 @@ export default {
         //     }
         // }
 
-        scheduler.addMarkedTimespan({
+        this.scheduler.addMarkedTimespan({
             days:  [6,0],
             zones: "fullday",
             css:   "week-end",
             type:  "dhx_time_block"
         });
 
-        scheduler.addMarkedTimespan({
+        this.scheduler.addMarkedTimespan({
             days:  "fullweek",
             zones:[12.5*60, 13.5*60],
             css:   "week-end",
@@ -360,17 +359,19 @@ export default {
         },
         submitEvent(ev) {
             if(!ev.createdAt) {
-                var query = {
-                    projectId: ev.project_id,
-                    scheduleId: ev.schedule_id
-                }
+                // var query = {
+                //     projectId: ev.project_id,
+                //     scheduleId: ev.schedule_id
+                // }
                 ev.owner = this.currentUser.id;
                 EventServices.createEvent(ev).then(data => {
+                    console.log(data)
                     this.tree.selection.remove();
                     this.editedEvent = {};
                 })
             } else {
                 EventServices.updateEvent(ev.id, ev).then(data => {
+                    console.log(data)
                     this.tree.selection.remove();
                     this.editedEvent = {};
                 })
@@ -378,12 +379,12 @@ export default {
         },
         getEvent(id) {
             if(this.focusedItem) {
-                var event = scheduler.getEvent(id)
+                var event = this.scheduler.getEvent(id)
                 this.focusedItem.start_date = event.start_date;
                 this.focusedItem.end_date = event.end_date;
                 return this.focusedItem;
             } else {
-                return scheduler.getEvent(id)
+                return this.scheduler.getEvent(id)
             }
         }
     },
@@ -414,7 +415,7 @@ export default {
             console.log(this.documents)
         },
         scheduler_data: function() {
-            scheduler.parse(this.scheduler_data);
+            this.scheduler.parse(this.scheduler_data);
         }
     }
 }
@@ -422,7 +423,6 @@ export default {
  
 <style>
     @import "~dhtmlx-scheduler/codebase/dhtmlxscheduler_material.css";
-    @import "~dhx-tree/codebase/tree.min.css";
     @import "~dhx-suite/codebase/suite.css";
 
     body {

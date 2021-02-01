@@ -8,8 +8,8 @@
  
 <script>
 import {Gantt} from 'dhtmlx-gantt';
-import {Layout as LayoutDHX } from 'dhx-suite';
-import {Toolbar as ToolbarDHX} from 'dhx-suite';
+import { Toolbar as ToolbarDHX } from 'dhx-suite';
+// import {Toolbar as ToolbarDHX} from 'dhx-suite';
 
 import ProjectServices from '../services/project.service';
 import ScheduleServices from '../services/schedule.service';
@@ -196,9 +196,9 @@ export default {
 
         let sortUp = "<i class='fas fa-sort-up'></i>";
         let sortDown = "<i class='fas fa-sort-down'></i>";
-        let sortDefault = "<i class='fas fa-sort'></i>";
+        // let sortDefault = "<i class='fas fa-sort'></i>";
 
-        toolbar.events.on("Click", (id,e) => {
+        toolbar.events.on("Click", (id) => {
             if(id === "collapse") {
                 gantt.eachTask((task) => {
                     task.$open = false;
@@ -652,22 +652,26 @@ export default {
         //         data: [],
         //         links: [],
         //     };
+        var endDate;
+        var startDate;
+        var scheduleEndDate;
+        var scheduleStartDate;
         for(const project of projects) {
             var dataset = {};
             if(project.end_date_revised !== "") {
                 if(!moment(project.end_date_revised).isValid()) {
-                    var endDate = formatDate(project.end_date, 'YYYY-MM-DD[T00:00:00.000Z]', 'DD-MM-YYYY');
+                    endDate = formatDate(project.end_date, 'YYYY-MM-DD[T00:00:00.000Z]', 'DD-MM-YYYY');
                 } else {
-                    var endDate = formatDate(project.end_date, 'YYYY-MM-DD[T00:00:00.000Z]', 'DD-MM-YYYY');
+                    endDate = formatDate(project.end_date, 'YYYY-MM-DD[T00:00:00.000Z]', 'DD-MM-YYYY');
                 }
             } else {
-                var endDate = formatDate(project.end_date, 'YYYY-MM-DD[T00:00:00.000Z]', 'DD-MM-YYYY');
+                endDate = formatDate(project.end_date, 'YYYY-MM-DD[T00:00:00.000Z]', 'DD-MM-YYYY');
             }
                 
             if(!moment(project.start_date).isValid()) {
-                var startDate = moment().format('DD-MM-YYYY');
+                startDate = moment().format('DD-MM-YYYY');
             } else {
-                var startDate = formatDate(project.start_date, 'YYYY-MM-DD[T00:00:00.000Z]', 'DD-MM-YYYY');
+                startDate = formatDate(project.start_date, 'YYYY-MM-DD[T00:00:00.000Z]', 'DD-MM-YYYY');
             }
             dataset.id = project._id;
             dataset.progress = project.progress;
@@ -689,18 +693,18 @@ export default {
                 if(schedule) {
                     if(schedule.end_date_revised !== "") {
                         if(!moment(schedule.end_date_revised).isValid()) {
-                            var scheduleEndDate = formatDate(schedule.end_date, 'YYYY-MM-DD[T00:00:00.000Z]', 'DD-MM-YYYY');
+                            scheduleEndDate = formatDate(schedule.end_date, 'YYYY-MM-DD[T00:00:00.000Z]', 'DD-MM-YYYY');
                         } else {
-                            var scheduleEndDate = formatDate(schedule.end_date_revised, 'YYYY-MM-DD[T00:00:00.000Z]', 'DD-MM-YYYY');
+                            scheduleEndDate = formatDate(schedule.end_date_revised, 'YYYY-MM-DD[T00:00:00.000Z]', 'DD-MM-YYYY');
                         }
                     } else {
-                        var scheduleEndDate = formatDate(schedule.end_date, 'YYYY-MM-DD[T00:00:00.000Z]', 'DD-MM-YYYY');
+                        scheduleEndDate = formatDate(schedule.end_date, 'YYYY-MM-DD[T00:00:00.000Z]', 'DD-MM-YYYY');
                     }
                         
                     if(!moment(schedule.start_date).isValid()) {
-                        var scheduleStartDate = moment().format('DD-MM-YYYY');
+                        scheduleStartDate = moment().format('DD-MM-YYYY');
                     } else {
-                        var scheduleStartDate = formatDate(schedule.start_date, 'YYYY-MM-DD[T00:00:00.000Z]', 'DD-MM-YYYY');
+                        scheduleStartDate = formatDate(schedule.start_date, 'YYYY-MM-DD[T00:00:00.000Z]', 'DD-MM-YYYY');
                     }
                    
                     schedule.id = schedule._id;
@@ -734,6 +738,7 @@ export default {
             });
 
     gantt.createDataProcessor(function(entity, action, data, id){
+        console.log(id)
         function getService(type) {
             if(type === "project") {
                 return ProjectServices;
@@ -803,6 +808,7 @@ export default {
                         Object.assign(data, initProjectData);
                         return getService(data.type).create(data).then(res => {
                                     gantt.message({type:"success", text:"Task created successfully"})
+                                    console.log(res)
                                 }).catch(err => {
                                     gantt.message({type:"error", text: err.message})
                                 });
@@ -860,6 +866,7 @@ export default {
                                 Object.assign(data, initScheduleData);
                                 return getService(data.type).create(data).then(res => {
                                     gantt.message({type:"success", text:"Project created successfully"})
+                                    console.log(res)
                                 }).catch(err => {
                                     gantt.message({type:"error", text: err.message})
                                 })
