@@ -23,10 +23,10 @@ export default {
         return {
             scales: [],
             resources: [],
-            tasks: {
-                data: [],
-                links: [],
-            },
+            // tasks: {
+            //     data: [],
+            //     links: [],
+            // },
             filters: {
                 sort: {
                     value: 1,
@@ -501,18 +501,18 @@ export default {
             gantt.$resourcesStore.parse(users);
         }
 
-        UserServices.getAllUser().then(res => {
-            for(const user of res.data) {
-                var data = {};
-                data.id = user._id;
-                data.text = user.username;
-                data.unit = "hours/day";
-                // data.value = user.value;
-                data.type = "work";
-                this.resources.push(data);
-            }
-            resourcesInit(this.resources);
-        });
+        // UserServices.getAllUser().then(res => {
+        //     for(const user of res.data) {
+        //         var data = {};
+        //         data.id = user._id;
+        //         data.text = user.username;
+        //         data.unit = "hours/day";
+        //         // data.value = user.value;
+        //         data.type = "work";
+        //         this.resources.push(data);
+        //     }
+        //     resourcesInit(this.resources);
+        // });
 
         // var scaleHeight = gantt.config.scale_height;
         // var textFilter = [
@@ -648,10 +648,10 @@ export default {
 	});
 
     var processData = (projects) => {
-        // var tasks = {
-        //         data: [],
-        //         links: [],
-        //     };
+        var tasks = {
+                data: [],
+                links: [],
+            };
         var endDate;
         var startDate;
         var scheduleEndDate;
@@ -711,7 +711,7 @@ export default {
                     schedule.start_date = scheduleStartDate;
                     schedule.end_date = scheduleEndDate;
                     schedule.text = schedule.name;
-                    this.tasks.data.push(schedule);
+                    tasks.data.push(schedule);
                 } else {
                     // dataset.start_date = startDate;
                     // dataset.end_date = endDate;
@@ -720,13 +720,13 @@ export default {
             for(const link of project.links){
                 link.id = link._id;
                 delete link._id;
-                this.tasks.links.push(link);
+                tasks.links.push(link);
             }
-            this.tasks.data.push(dataset);
+            tasks.data.push(dataset);
         }
-        // resourcesInit(this.resources);
+        resourcesInit(this.resources);
         gantt.init(this.$refs.container);
-        gantt.parse(this.tasks)
+        gantt.parse(tasks)
     }
 
         getProjectService(this.topRole, this.filters)
