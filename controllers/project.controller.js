@@ -6,7 +6,7 @@ var getName = function( search ) {
   return search == undefined ? null
        : search == "undefined" ? null
        : search == "" ? null
-       : search 
+       : new RegExp(search, 'i')
 }
 
 // Create and Save a new Project
@@ -65,7 +65,7 @@ exports.findAll = (req, res) => {
       ]
     } else {
       var aggregation = [
-        { $match: { $text: { $search: getName(req.query.search) } } },
+        { $match: { name: { $regex: getName(req.query.search) } } },
         { $addFields: { total: { $sum: "$schedules.charge" } } },
         { $sort: { [req.query.sort_type]: parseInt(req.query.sort_value)} }
       ]
@@ -249,7 +249,7 @@ exports.findAllPublished = (req, res) => {
       ]
     } else {
       var aggregation = [
-        { $match: { pm:pm , $text: { $search: getName(req.query.search) } } },
+        { $match: { pm:pm , name: { $regex: getName(req.query.search) } } },
         { $addFields: { total: { $sum: "$schedules.charge" } } },
         { $sort: { [req.query.sort_type]: parseInt(req.query.sort_value)} }
       ]
@@ -285,7 +285,7 @@ exports.findAllPublished = (req, res) => {
       ]
     } else {
       var aggregation = [
-        { $match: { kam:kam , $text: { $search: getName(req.query.search) } } },
+        { $match: { kam:kam , name: { $regex: getName(req.query.search) } } },
         { $addFields: { total: { $sum: "$schedules.charge" } } },
         { $sort: { [req.query.sort_type]: parseInt(req.query.sort_value)} }
       ]
