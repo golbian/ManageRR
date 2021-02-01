@@ -49,10 +49,11 @@
       </form>
     </div>
     <h2 class="text-center">Test Accounts :</h2>
-    <ul class="list-group">
-      <li class="list-group-item list-group-item-primary">Pm account: Jean-baptiste  modo_rr</li>
-      <li class="list-group-item list-group-item-warning">Kam account: TestKam  test_rr</li>
-      <li class="list-group-item list-group-item-danger">Admin account: Fabrice  admin_rr</li>
+    <br>
+    <ul style="margin-left:40%;" class="list-group row">
+      <li class="list-group-item list-group-item-primary text-center col-4">Pm account: Jean-baptiste  modo_rr</li>
+      <li class="list-group-item list-group-item-warning text-center col-4">Kam account: TestKam  test_rr</li>
+      <li class="list-group-item list-group-item-danger text-center col-4">Admin account: Fabrice  admin_rr</li>
     </ul>
   </div>
 </template>
