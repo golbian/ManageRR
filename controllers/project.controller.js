@@ -241,15 +241,22 @@ exports.findAllPublished = (req, res) => {
 
   exports.findAllPmProject = (req, res) => {
     const pm = req.params.pm;
-    Project.find().then(()=>{
-      return Project.aggregate([
+    if(getName(req.query.search) === null) {
+      var aggregation = [
         { $match: { pm: pm } },
-        {
-          $addFields: {
-            total: { $sum: "$schedules.charge" },
-          }
-        },
-    ]).exec(function(err, data) {
+        { $addFields: { total: { $sum: "$schedules.charge" } } },
+        { $sort: { [req.query.sort_type]: parseInt(req.query.sort_value)} }
+      ]
+    } else {
+      var aggregation = [
+        { $match: { pm:pm , $text: { $search: getName(req.query.search) } } },
+        { $addFields: { total: { $sum: "$schedules.charge" } } },
+        { $sort: { [req.query.sort_type]: parseInt(req.query.sort_value)} }
+      ]
+    }
+
+    Project.find().then(()=>{
+      return Project.aggregate(aggregation).exec(function(err, data) {
       /*Project.populate(doc, {
         path: 'schedules.resources',
         populate: { path: 'resources' },
@@ -270,15 +277,22 @@ exports.findAllPublished = (req, res) => {
 
   exports.findAllKamProject = (req, res) => {
     const kam = req.params.kam;
-    Project.find().then(()=>{
-      return Project.aggregate([
+    if(getName(req.query.search) === null) {
+      var aggregation = [
         { $match: { kam: kam } },
-        {
-          $addFields: {
-            total: { $sum: "$schedules.charge" },
-          }
-        },
-    ]).exec(function(err, data) {
+        { $addFields: { total: { $sum: "$schedules.charge" } } },
+        { $sort: { [req.query.sort_type]: parseInt(req.query.sort_value)} }
+      ]
+    } else {
+      var aggregation = [
+        { $match: { kam:kam , $text: { $search: getName(req.query.search) } } },
+        { $addFields: { total: { $sum: "$schedules.charge" } } },
+        { $sort: { [req.query.sort_type]: parseInt(req.query.sort_value)} }
+      ]
+    }
+
+    Project.find().then(()=>{
+      return Project.aggregate(aggregation).exec(function(err, data) {
       /*Project.populate(doc, {
         path: 'schedules.resources',
         populate: { path: 'resources' },

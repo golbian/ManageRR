@@ -17,16 +17,34 @@ class projectServices {
       return http.get("/projects/published",{ headers: authHeader() });
     }
 
-    getAllPmProject(pm) {
-      return http.get(`/projects/pm/${pm}`,{ headers: authHeader() });
+    getAllPmProject(pm, filters) {
+      const query = new URLSearchParams({
+        search: filters.search,
+        sort_value: filters.sort.value,
+        sort_type: filters.sort.type,
+      }).toString();
+
+      return http.get(`/projects/pm/${pm}?`+ query,{ headers: authHeader() });
     }
 
-    getAllKamProject(kam) {
-      return http.get(`/projects/kam/${kam}`,{ headers: authHeader() });
+    getAllKamProject(kam, filters) {
+      const query = new URLSearchParams({
+        search: filters.search,
+        sort_value: filters.sort.value,
+        sort_type: filters.sort.type,
+      }).toString();
+
+      return http.get(`/projects/kam/${kam}?`+ query,{ headers: authHeader() });
     }
 
-    findAllRessourceProject(resource) {
-      return http.get(`/projects/resource/${resource}`,{ headers: authHeader() });
+    findAllRessourceProject(resource, filters) {
+      const query = new URLSearchParams({
+        search: filters.search,
+        sort_value: filters.sort.value,
+        sort_type: filters.sort.type,
+      }).toString();
+
+      return http.get(`/projects/resource/${resource}?`+ query,{ headers: authHeader() });
     }
 
     async getProject(id) {
