@@ -26,6 +26,7 @@ module.exports = mongoose => {
         nestedLevel: Number,
         status: String,
         progress: Number,
+        level: String,
         start_date: mongoose.Schema.Types.Mixed,
         end_date: mongoose.Schema.Types.Mixed,
         end_date_revised: mongoose.Schema.Types.Mixed,

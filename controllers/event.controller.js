@@ -16,6 +16,11 @@ exports.create = (req, res) => {
     owner: req.body.owner,
     client: req.body.client,
     deliverable: req.body.deliverable,
+    user: req.body.user,
+    task: req.body.task,
+    pm: req.body.pm,
+    kam: req.body.kam,
+    project: req.body.project,
     project_id: req.body.project_id,
     schedule_id: req.body.schedule_id,
     start_date: req.body.start_date,
@@ -56,7 +61,47 @@ exports.findAll = (req, res) => {
             });
           }
     })
+};
 
+exports.findAdminEvents = (req, res) => {
+  var aggregation = [
+    {
+      $group: {
+        _id: {
+          user: "$user",
+          task: "$task",
+        },
+        name: { $first: "name"},
+        user: { $first: "$user"},
+        client: { $first: "$client"},
+        deliverable: { $first: "$deliverable"},
+        task: { $first: "$task"},
+        pm: { $first: "$pm"},
+        kam: { $first: "$kam"},
+        project: { $first: "$project"},
+        project_id: { $first: "$project_id"},
+        schedule_id: { $first: "$schedule_id"},
+        start_date: { $first: "$start_date"},
+        end_date: { $first: "$end_date"},
+        tps: { $first: "$tps"},
+        duration: { $first: "$duration"},
+        insitu: { $first: "$insitu"},
+        pointage: { $sum: "$tps"},
+        }
+      }
+  ]
+  Event.find().then(()=>{
+    return Event.aggregate(aggregation).exec(function(err, data) {
+if(err) {
+          res.status(500).send({
+            message:
+              err.message || "Some error occurred while retrieving projects."
+          });
+        } else {
+          res.send(data);
+        }
+      })
+    })
 };
 
 // Find a single Event with an id
@@ -167,11 +212,11 @@ exports.findAllPublished = (req, res) => {
   };
 
   exports.findAllOwnerEvents = (req, res) => {
-    const ownerId = req.params.id;
+    const user = req.params.user;
     Event.find()
     .then(() => {
       return Event.aggregate([
-          { $match: { owner: new ObjectId(ownerId) }},
+          { $match: { user: user}},
       ])
       .exec(function(err, doc) {
         Event.populate(doc, {

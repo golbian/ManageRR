@@ -18,10 +18,11 @@ import {
   faSignOutAlt,
   faPlus,
   faPencilAlt,
-  faTimes
+  faTimes,
+  faTimesCircle
 } from '@fortawesome/free-solid-svg-icons';
 
-library.add(faHome, faUser, faUserPlus, faSignInAlt, faSignOutAlt, faPlus, faPencilAlt, faTimes);
+library.add(faHome, faUser, faUserPlus, faSignInAlt, faSignOutAlt, faPlus, faPencilAlt, faTimes, faTimesCircle);
 
 Vue.config.productionTip = false;
 
