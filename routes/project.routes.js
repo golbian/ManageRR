@@ -23,7 +23,7 @@ module.exports = app => {
     router.get("/resource/:resource",[authJwt.verifyToken], projects.findAllResourceProject);
   
     // Retrieve a single Project with id
-    router.get("/:id",[authJwt.verifyToken, authJwt.isModerator], projects.findOne);
+    router.get("/:id",[authJwt.verifyToken, authJwt.isAdmin], projects.findOne);
   
     // Update a Project with id
     router.put("/:id",[authJwt.verifyToken, authJwt.isAdmin], projects.update);

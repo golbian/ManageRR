@@ -26,6 +26,8 @@ exports.create = (req, res) => {
     start_date: req.body.start_date,
     end_date: req.body.end_date,
     tps: req.body.tps,
+    month: req.body.month,
+    year: req.body.year,
     duration: req.body.duration,
     insitu: req.body.insitu
   });
@@ -70,6 +72,8 @@ exports.findAdminEvents = (req, res) => {
         _id: {
           user: "$user",
           task: "$task",
+          month: "$month",
+          year: "$year"
         },
         name: { $first: "name"},
         user: { $first: "$user"},
@@ -86,6 +90,8 @@ exports.findAdminEvents = (req, res) => {
         tps: { $first: "$tps"},
         duration: { $first: "$duration"},
         insitu: { $first: "$insitu"},
+        month: { $first: "$month"},
+        year: { $first: "$year"},
         pointage: { $sum: "$tps"},
         }
       }

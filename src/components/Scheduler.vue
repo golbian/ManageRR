@@ -198,7 +198,6 @@ export default {
 
         this.tree.selection.events.on("AfterSelect", (id) => {
             var event = this.tree.selection.getItem(id);
-            console.log(event)
 
             this.focusedItem = event;
             this.focusedItem.name = event.value;                
@@ -209,7 +208,7 @@ export default {
             this.focusedItem.project = event.parent_name;
             this.focusedItem.insitu = true;
             this.focusedItem.task = event.name;
-            this.focusedItem.user = this.currentUser.sigle
+            this.focusedItem.user = this.currentUser.sigle;
             this.focusedItem.pm = event.pm;
             this.focusedItem.kam = event.kam;
         });
@@ -240,9 +239,9 @@ export default {
         this.scheduler.config.last_hour = 20;
         this.scheduler.config.container_autoresize = true;
         this.scheduler.config.dblclick_create = true;
-        this.scheduler.config.details_on_create = true;
-        this.scheduler.config.details_on_dblclick = true;
-        this.scheduler.config.responsive_lightbox = true;
+        this.scheduler.config.details_on_create = false;
+        this.scheduler.config.details_on_dblclick = false;
+        this.scheduler.config.responsive_lightbox = false;
         this.scheduler.config.touch_tooltip = false;
 
         this.scheduler.attachEvent("onBeforeLightbox", (id) => {
@@ -260,12 +259,12 @@ export default {
             for(const event of response.data) {
                 event.id = event._id
                 event.text = event.name
-                console.log(event)
             }
             this.scheduler_data = response.data;
         })
 
         this.submitEvent = (ev) => {
+            console.log(ev)
             if(!ev.createdAt) {
                 console.log(ev)
                 ev.owner = this.currentUser.id;
@@ -273,6 +272,8 @@ export default {
                 ev.tps = ev.project.tps;
                 ev.project_id = ev.parent;
                 ev.schedule_id = ev._id;
+                ev.month = moment(ev.start_date).format("MMMM");
+                ev.year = moment(ev.start_date).year();
                 EventServices.createEvent(ev).then(data => {
                     this.tree.selection.remove();
                     this.editedEvent = null;
@@ -283,6 +284,7 @@ export default {
                     this.editedEvent = null;
                 })
             }
+            console.log(ev)
         }
 
         this.scheduler.addMarkedTimespan({
@@ -425,7 +427,14 @@ export default {
             this.scheduler.parse(this.scheduler_data);
         },
         showModal: function() {
-            this.scheduler.render();
+            this.scheduler.clearAll();
+            this.getEventService(this.topRole).then( response => {
+            for(const event of response.data) {
+                event.id = event._id
+                event.text = event.name
+            }
+            this.scheduler_data = response.data;
+        })
         }
     }
 }

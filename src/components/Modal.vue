@@ -2,7 +2,7 @@
 // import ProjectServices from '../services/project.service';
 import EventServices from '../services/event.service';
 import scheduler from "dhtmlx-scheduler";
-// import moment from 'moment';
+import moment from 'moment';
   export default {
     name: 'modal',
     props: ["editedEvent"],
@@ -30,6 +30,8 @@ import scheduler from "dhtmlx-scheduler";
             }
         },
         submitEvent(ev) {
+            ev.month = moment(ev.start_date).format("MMMM");
+            ev.year = moment(ev.start_date).year();
             if(!ev.createdAt) {
                 // var query = {
                 //     projectId: ev.project_id,
@@ -43,6 +45,7 @@ import scheduler from "dhtmlx-scheduler";
                     console.log(data)
                 })
             }
+            console.log(ev)
             this.close();
         },
         close() {

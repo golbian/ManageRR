@@ -17,6 +17,9 @@
         <li class="nav-item">
           <router-link class="nav-link" to="/scheduler">Pointage</router-link>
         </li>
+        <li class="nav-item">
+          <router-link class="nav-link" to="/scheduler-admin">Pointings Admin</router-link>
+        </li>
         <li v-if="showAdminBoard" class="nav-item">
           <router-link to="/admin" class="nav-link">Administration</router-link>
         </li>

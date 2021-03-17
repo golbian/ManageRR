@@ -11,6 +11,8 @@ module.exports = mongoose => {
         task: String,
         pm: String,
         kam: String,
+        month: String,
+        year: Number,
         pointage: String,
         start_date:String,
         end_date: String,
