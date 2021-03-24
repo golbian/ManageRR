@@ -11,16 +11,36 @@ class eventServices {
       return http.get(`/events`, { headers: authHeader()});
     }
 
-    getAllAdminEvents() {
-      return http.get(`/events/admin`, { headers: authHeader()});
+    getEvent(id) {
+      return http.get(`/events/${id}`, { headers: authHeader()});
+    }
+
+    getAllEventsPerMonth() {
+      return http.get(`/events/month/admin`, { headers: authHeader()});
+    }
+
+    getAllPmEvents(pm) {
+      return http.get(`/events/pm/${pm}`,{ headers: authHeader() });
+    }
+
+    getAllKamEvents(kam) {
+      return http.get(`/events/kam/${kam}`,{ headers: authHeader() });
     }
 
     getAllOwnerEvents(user) {
       return http.get(`/events/user/${user}`,{ headers: authHeader() });
     }
 
-    getEvent(id) {
-      return http.get(`/events/${id}`, { headers: authHeader()});
+    getAllPmEventsPerMonth(pm) {
+      return http.get(`/events/month/pm/${pm}`,{ headers: authHeader() });
+    }
+
+    getAllKamEventsPerMonth(kam) {
+      return http.get(`/events/month/kam/${kam}`,{ headers: authHeader() });
+    }
+
+    getAllOwnerEventsPerMonth(user) {
+      return http.get(`/events/month/user/${user}`,{ headers: authHeader() });
     }
 
     update(id, data) {

@@ -264,10 +264,8 @@ export default {
         })
 
         this.submitEvent = (ev) => {
-            console.log(ev)
             if(!ev.createdAt) {
-                console.log(ev)
-                ev.owner = this.currentUser.id;
+                ev.user = this.currentUser.sigle;
                 ev.name = ev.project.text;
                 ev.tps = ev.project.tps;
                 ev.project_id = ev.parent;
@@ -284,7 +282,6 @@ export default {
                     this.editedEvent = null;
                 })
             }
-            console.log(ev)
         }
 
         this.scheduler.addMarkedTimespan({
@@ -361,9 +358,8 @@ export default {
             }
         },
         getProjectService(role, filters) {
-            console.log(this.currentUser)
             if(role.name === "user") {
-                return ProjectServices.getAllResourceProject(this.currentUser._id, filters)
+                return ProjectServices.getAllResourceProject(this.currentUser.id, filters)
             } else if(role.name === "pm") {
                 return ProjectServices.getAllPmProject( this.currentUser.sigle, filters)
             } else if (role.name === "kam") {
@@ -373,11 +369,14 @@ export default {
             }
         },
         getEventService(role, filters) {
-            console.log(this.currentUser)
-            if(role.name !== "admin") {
+            if(role.name === "user") {
                 return EventServices.getAllOwnerEvents(this.currentUser.sigle, filters)
+            } else if(role.name === "pm") {
+                return EventServices.getAllPmEvents( this.currentUser.sigle, filters)
+            } else if (role.name === "kam") {
+                return EventServices.getAllKamEvents(this.currentUser.sigle, filters)
             } else {
-                return EventServices.getAllEvents()
+                return EventServices.getAllEvents(filters)
             }
         },
         changeRole(role) {

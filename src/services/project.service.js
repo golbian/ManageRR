@@ -37,7 +37,7 @@ class projectServices {
       return http.get(`/projects/kam/${kam}?`+ query,{ headers: authHeader() });
     }
 
-    findAllRessourceProject(resource, filters) {
+    getAllResourceProject(resource, filters) {
       const query = new URLSearchParams({
         search: filters.search,
         sort_value: filters.sort.value,

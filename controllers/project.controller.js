@@ -317,15 +317,22 @@ exports.findAllPublished = (req, res) => {
 
   exports.findAllResourceProject = (req, res) => {
     const resource = req.params.resource;
+
+    if(getName(req.query.search) === null) {
+      var aggregation = [
+        { $match: { "schedules.resources._id":resource } },
+        { $addFields: { total: { $sum: "$schedules.charge" } } },
+        { $sort: { [req.query.sort_type]: parseInt(req.query.sort_value)} }
+      ]
+    } else {
+      var aggregation = [
+        { $match: { "schedules.resources._id":resource , name: { $regex: getName(req.query.search) } } },
+        { $addFields: { total: { $sum: "$schedules.charge" } } },
+        { $sort: { [req.query.sort_type]: parseInt(req.query.sort_value)} }
+      ]
+    }
     Project.find().then(()=>{
-      return Project.aggregate([
-        { $match: { "schedules.resources.resource_id": resource } },
-        {
-          $addFields: {
-            total: { $sum: "$schedules.charge" },
-          }
-        },
-    ]).exec(function(err, data) {
+      return Project.aggregate(aggregation).exec(function(err, data) {
       /*Project.populate(doc, {
         path: 'schedules.resources',
         populate: { path: 'resources' },

@@ -184,7 +184,7 @@ export default {
 
         var getProjectService = (role, filters) => {
             if(role.name === "user") {
-                return ProjectServices.getAllResourceProject(this.currentUser._id, filters)
+                return ProjectServices.getAllResourceProject(this.currentUser.id, filters)
             } else if(role.name === "pm") {
                 return ProjectServices.getAllPmProject( this.currentUser.sigle, filters)
             } else if (role.name === "kam") {

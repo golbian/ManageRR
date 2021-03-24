@@ -48,6 +48,12 @@ import moment from 'moment';
             console.log(ev)
             this.close();
         },
+        deleteEvent(id) {
+          console.log(id)
+          EventServices.delete(id).then(data => {
+            console.log(data)
+          })
+        },
         close() {
         this.$emit('close');
       },
@@ -152,6 +158,7 @@ import moment from 'moment';
               <div class="form-group">
                   <button v-if="!NewEvent.createdAt" class="btn btn-primary btn-block">Create</button>
                   <button v-else class="btn btn-primary btn-block">Save</button>
+                  <button @click="deleteEvent(NewEvent.id)" class="btn btn-danger btn-block">Delete</button>
               </div>
           </form>
             </slot>

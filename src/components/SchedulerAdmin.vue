@@ -42,9 +42,8 @@ export default {
             return data
         }
 
-            EventServices.getAllAdminEvents().then(response => {
+            this.getEventService(this.topRole, this.currentUser).then(response => {
                 for(const data of response.data) {
-                    console.log(data)
                     data.id = data._id;
                     data.start_date = formatDate(data.start_date, 'YYYY-MM-DD[T00:00:00.000Z]', 'DD-MM-YYYY');
                     data.end_date = formatDate(data.end_date, 'YYYY-MM-DD[T00:00:00.000Z]', 'DD-MM-YYYY');
@@ -97,11 +96,8 @@ export default {
         // this.grid.selection.setCell(this.grid.data.getItem(this.grid.data.getId(0)), this.grid.config.columns[0]);
 
         this.grid.data.events.on('Change', (id, status, data) => {
-
             if(data) {
-
                 var event = {};
-                
                 // var startDate = formatDate(data.start_date, 'DD-MM-YYYY', 'YYYY-MM-DD[T00:00:00.000Z]');
                 // var endDate = formatDate(data.end_date, 'DD-MM-YYYY', 'YYYY-MM-DD[T00:00:00.000Z]');
 
@@ -128,29 +124,17 @@ export default {
     },
 
     methods: {
-    //     saveGrid() {
-    //         var data = {};
-
-    //         data.id = this.grid.data.id;
-            
-    //         data.state = this.grid.data.serialize();
-
-    //         data.name = this.grid.name;
-
-
-    //         GridServices.createGrid(data)
-    //         .then(response => {
-    //             this.grid.id = response.data.id;
-    //             this.submitted = true;
-    //         })
-    //         .catch(e => {
-    //             console.log(e);
-    //         });
-    //     },
-    //     clearGrid() {
-    //   this.submitted = false;
-    //   this.grid.destructor() ;
-    // }
+    getEventService(role, filters) {
+            if(role.name === "user") {
+                return EventServices.getAllOwnerEventsPerMonth(this.currentUser.sigle, filters)
+            } else if(role.name === "pm") {
+                return EventServices.getAllPmEventsPerMonth( this.currentUser.sigle, filters)
+            } else if (role.name === "kam") {
+                return EventServices.getAllKamEventsPerMonth(this.currentUser.sigle, filters)
+            } else {
+                return EventServices.getAllEventsPerMonth(filters)
+            }
+        },
     },
   }
 </script>

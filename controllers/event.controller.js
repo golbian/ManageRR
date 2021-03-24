@@ -13,7 +13,6 @@ exports.create = (req, res) => {
 
   const event = new Event({
     name: req.body.name,
-    owner: req.body.owner,
     client: req.body.client,
     deliverable: req.body.deliverable,
     user: req.body.user,
@@ -47,7 +46,7 @@ exports.create = (req, res) => {
 };
 
 // Retrieve all Events from the database.
-exports.findAll = (req, res) => {
+exports.findAllEvents = (req, res) => {
     const name = req.query.name;
     var condition = name ? { name: { $regex: new RegExp(name), $options: "i" } } : {};
   
@@ -65,7 +64,7 @@ exports.findAll = (req, res) => {
     })
 };
 
-exports.findAdminEvents = (req, res) => {
+exports.findAllEventsPerMonth = (req, res) => {
   var aggregation = [
     {
       $group: {
@@ -162,7 +161,6 @@ exports.update = (req, res) => {
 // Delete a Event with the specified id in the request
 exports.delete = (req, res) => {
     const id = req.params.id;
-  
     Event.findOneAndDelete({_id : id}, { useFindAndModify: false })
       .then(data => {
         if (!data) {
@@ -198,32 +196,230 @@ exports.deleteAll = (req, res) => {
       });
   };
 
-// Find all published Projects
-exports.findAllPublished = (req, res) => {
-    Event.find({ published: true })
-    .populate({
-      path: 'schedules.resources',
-      populate: { path: 'resources' },
-      select: "username"
-    })
-      .then(data => {
-        res.send(data);
+  exports.findAllPmEvents = (req, res) => {
+    const pm = req.params.pm;
+    var aggregation = [
+      {$match : {pm: pm}},
+    ]
+    Event.find()
+    .then(() => {
+      return Event.aggregate(aggregation)
+      .exec(function(err, doc) {
+        Event.populate(doc, {
+            path: 'projects',
+            populate: { path: 'project_id' },
+          },function(err,data) {
+            if(err) {
+              res.status(500).send({
+                message:
+                  err.message || "Some error occurred while retrieving events."
+              });
+            } else {
+              res.send(data);
+            }
+        })
       })
-      .catch(err => {
-        res.status(500).send({
-          message:
-            err.message || "Some error occurred while retrieving projects."
-        });
-      });
+    })
+  };
+
+  exports.findAllPmEventsPerMonth = (req, res) => {
+    const pm = req.params.pm;
+    var aggregation = [
+      {$match : {pm: pm}},
+      {
+        $group: {
+          _id: {
+            user: "$user",
+            task: "$task",
+            month: "$month",
+            year: "$year"
+          },
+          name: { $first: "name"},
+          user: { $first: "$user"},
+          client: { $first: "$client"},
+          deliverable: { $first: "$deliverable"},
+          task: { $first: "$task"},
+          pm: { $first: "$pm"},
+          kam: { $first: "$kam"},
+          project: { $first: "$project"},
+          project_id: { $first: "$project_id"},
+          schedule_id: { $first: "$schedule_id"},
+          start_date: { $first: "$start_date"},
+          end_date: { $first: "$end_date"},
+          tps: { $first: "$tps"},
+          duration: { $first: "$duration"},
+          insitu: { $first: "$insitu"},
+          month: { $first: "$month"},
+          year: { $first: "$year"},
+          pointage: { $sum: "$tps"},
+          }
+        }
+    ]
+    Event.find()
+    .then(() => {
+      return Event.aggregate(aggregation)
+      .exec(function(err, doc) {
+        Event.populate(doc, {
+            path: 'projects',
+            populate: { path: 'project_id' },
+          },function(err,data) {
+            if(err) {
+              res.status(500).send({
+                message:
+                  err.message || "Some error occurred while retrieving events."
+              });
+            } else {
+              res.send(data);
+            }
+        })
+      })
+    })
+  };
+
+  exports.findAllKamEvents = (req, res) => {
+    const kam = req.params.kam;
+    var aggregation = [
+      {
+        $match : {kam: kam},
+      }
+    ]
+    Event.find()
+    .then(() => {
+      return Event.aggregate(aggregation)
+      .exec(function(err, doc) {
+        Event.populate(doc, {
+            path: 'projects',
+            populate: { path: 'project_id' },
+          },function(err,data) {
+            if(err) {
+              res.status(500).send({
+                message:
+                  err.message || "Some error occurred while retrieving events."
+              });
+            } else {
+              res.send(data);
+            }
+        })
+      })
+    })
+  };
+
+  exports.findAllKamEventsPerMonth = (req, res) => {
+    const kam = req.params.kam;
+    var aggregation = [
+      {
+        $match : {kam: kam},
+        $group: {
+          _id: {
+            user: "$user",
+            task: "$task",
+            month: "$month",
+            year: "$year"
+          },
+          name: { $first: "name"},
+          user: { $first: "$user"},
+          client: { $first: "$client"},
+          deliverable: { $first: "$deliverable"},
+          task: { $first: "$task"},
+          pm: { $first: "$pm"},
+          kam: { $first: "$kam"},
+          project: { $first: "$project"},
+          project_id: { $first: "$project_id"},
+          schedule_id: { $first: "$schedule_id"},
+          start_date: { $first: "$start_date"},
+          end_date: { $first: "$end_date"},
+          tps: { $first: "$tps"},
+          duration: { $first: "$duration"},
+          insitu: { $first: "$insitu"},
+          month: { $first: "$month"},
+          year: { $first: "$year"},
+          pointage: { $sum: "$tps"},
+          },
+        }
+    ]
+    Event.find()
+    .then(() => {
+      return Event.aggregate(aggregation)
+      .exec(function(err, doc) {
+        Event.populate(doc, {
+            path: 'projects',
+            populate: { path: 'project_id' },
+          },function(err,data) {
+            if(err) {
+              res.status(500).send({
+                message:
+                  err.message || "Some error occurred while retrieving events."
+              });
+            } else {
+              res.send(data);
+            }
+        })
+      })
+    })
   };
 
   exports.findAllOwnerEvents = (req, res) => {
     const user = req.params.user;
+    var aggregation = [
+      {$match : {user: user}},
+    ]
     Event.find()
     .then(() => {
-      return Event.aggregate([
-          { $match: { user: user}},
-      ])
+      return Event.aggregate(aggregation)
+      .exec(function(err, doc) {
+        Event.populate(doc, {
+            path: 'projects',
+            populate: { path: 'project_id' },
+          },function(err,data) {
+            if(err) {
+              res.status(500).send({
+                message:
+                  err.message || "Some error occurred while retrieving events."
+              });
+            } else {
+              res.send(data);
+            }
+        })
+      })
+    })
+  };
+
+  exports.findAllOwnerEventsPerMonth = (req, res) => {
+    const user = req.params.user;
+    var aggregation = [
+      {$match : {user: user}},
+      {
+        $group: {
+          _id: {
+            user: "$user",
+            task: "$task",
+            month: "$month",
+            year: "$year"
+          },
+          name: { $first: "name"},
+          user: { $first: "$user"},
+          client: { $first: "$client"},
+          deliverable: { $first: "$deliverable"},
+          task: { $first: "$task"},
+          pm: { $first: "$pm"},
+          kam: { $first: "$kam"},
+          project: { $first: "$project"},
+          project_id: { $first: "$project_id"},
+          schedule_id: { $first: "$schedule_id"},
+          start_date: { $first: "$start_date"},
+          end_date: { $first: "$end_date"},
+          tps: { $first: "$tps"},
+          duration: { $first: "$duration"},
+          insitu: { $first: "$insitu"},
+          month: { $first: "$month"},
+          year: { $first: "$year"},
+          pointage: { $sum: "$tps"},
+          }
+        }
+    ]
+    Event.find()
+    .then(() => {
+      return Event.aggregate(aggregation)
       .exec(function(err, doc) {
         Event.populate(doc, {
             path: 'projects',

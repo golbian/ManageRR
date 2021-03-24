@@ -27,7 +27,18 @@ export default {
                     type: "name",
                 },
                 search: "",
-            }
+            },
+            // groupsTitle: {
+            //     primary: [
+            //         "Designation","Country","Client", "Contact","Status", "Comments","Jours"
+            //     ],
+            //     secondary: [
+            //         "Stage", "KAM","PM", "TEMP", "Domaine"
+            //     ],
+            //     tertiary: [
+            //         "Charge", "ETP","Debours", "Début", "Fin"
+            //     ],
+            // }
         };
     },
     computed: {
@@ -48,7 +59,7 @@ export default {
 
         var getProjectService = (role, filters) => {
             if(role.name === "user") {
-                return ProjectServices.getAllResourceProject(this.currentUser._id, filters)
+                return ProjectServices.getAllResourceProject(this.currentUser.id, filters)
             } else if(role.name === "pm") {
                 return ProjectServices.getAllPmProject( this.currentUser.sigle, filters)
             } else if (role.name === "kam") {
@@ -59,9 +70,7 @@ export default {
         }
 
             getProjectService(this.topRole, this.filters).then(response => {
-
                 for(const data of response.data) {
-                    console.log(data)
                     data.id = data._id;
                     data.start_date = formatDate(data.start_date, 'YYYY-MM-DD[T00:00:00.000Z]', 'DD-MM-YYYY');
                     data.end_date = formatDate(data.end_date, 'YYYY-MM-DD[T00:00:00.000Z]', 'DD-MM-YYYY');
@@ -93,35 +102,37 @@ export default {
 
         var config = {
                 columns: [
-                    { width: 150, id: 'name',header: [{ text: "Designation" },{ content: "inputFilter" }] },
-                    { width: 100, id: 'country',header: [{ text: "Country" },{ content: "inputFilter" }] },
-                    { width: 100, id: 'client',header: [{ text: "Client" },{ content: "inputFilter" }] },
-                    { width: 100, id: 'kam',header: [{ text: "KAM" },{ content: "inputFilter" }] },
-                    { width: 100, id: 'pm',header: [{ text: "PM" },{ content: "inputFilter" }] },
+                    { width: 150, id: 'name',header: [{ text: "<span class='headers-primary' >Designation</span>" },{ content: "inputFilter" }] },
+                    { width: 100, id: 'client',header: [{ text: "<span class='headers-primary' >Client</span>"  },{ content: "inputFilter" }] },
+                    { width: 100, id: 'country',header: [{ text: "<span class='headers-primary' >Country</span>"  },{ content: "inputFilter" }] },
+                    { width: 100, id: 'contact',header: [{ text: "<span class='headers-primary' >Contact</span>"  },{ content: "inputFilter" }] },
                     { 
                         width: 160, id: 'stage',
-                        header: [{ text: "Stage" }, { content: "selectFilter" }],
+                        header: [{ text: "<span class='headers-secondary' >Stage</span>" }, { content: "selectFilter" }],
                         editorType: "select",
                         editable: this.topRole.canUpdateStage,
                         options: ["0. LEAD","1. OPPORTUNITY", "2. RFQ / RFI", "3. BID", "4. FINAL NEGOTIATION", "5. ACCORD CLIENT", "8. COMMANDE", "9. LIVRE", "10. FACTURE", "11. SUSPENDED", "12. PAYÉ"] 
                     },
+                    { width: 100, id: 'kam',header: [{ text: "<span class='headers-secondary' >KAM</span>" },{ content: "inputFilter" }] },
+                    { width: 100, id: 'pm',header: [{ text: "<span class='headers-secondary' >PM</span>" },{ content: "inputFilter" }] },
                     {
                         width: 160, id: 'temp',
-                        header: [{ text: "Température" }, { content: "selectFilter" }],
+                        header: [{ text: "<span class='headers-secondary' >TEMP</span>" }, { content: "selectFilter" }],
                         editorType: "select",
-                        options: ["Froid", "Moyen", "Chaud"]
+                        options: ["FROID", "MOYEN", "CHAUD"]
                     },
-                    // { 
-                    //     width: 160, id: 'domaine',
-                    //     header: [{ text: "Domaine" }, { content: "selectFilter" }],
-                    //     editorType: "select",
-                    //     options: ["Training", "Product & System", "In-Service", "Improvaero"]
-                    // },
-                    { width: 100, id: 'charge',header: [{ text: "Charge" },{ content: "inputFilter" }] },
-                    {hidden: !this.topRole.financial, width: 100, id: 'ca',header: [{ text: "CA" },{ content: "inputFilter" }] },
-                    // { width: 100,header: [{ text: "CA" },{ content: "inputFilter" }] },
-                    { width: 100, id: 'start_date',header: [{ text: "Start Date" },{ content: "inputFilter" }], type: 'date'},
-                    { width: 100, id: 'end_date',header: [{ text: "End Date" },{ content: "inputFilter" }], type: 'date'},
+                    { 
+                        width: 160, id: 'domaine',
+                        header: [{text :"<span class='headers-secondary' >Domaine</span>"}, { content: "selectFilter" }],
+                        editorType: "select",
+                        options: ["Training", "Product & System", "In-Service", "Improvaero"]
+                    },
+                    { width: 100, id: 'charge',header: [{ text: "<span class='headers-tertiary' >Charge</span>" },{ content: "inputFilter" }] },
+                    {hidden: !this.topRole.financial, width: 100, id: 'ca',header: [{ text: "<span class='headers-tertiary' >CA</span>" },{ content: "inputFilter" }] },
+                    { width: 100,id: 'etp', header: [{ text: "<span class='headers-tertiary' >ETP</span>" },{ content: "inputFilter" }] },
+                    { width: 100,id: 'debours', header: [{ text: "<span class='headers-tertiary' >Debours</span>" },{ content: "inputFilter" }] },
+                    { width: 100, id: 'start_date',header: [{ text: "<span class='headers-tertiary' >Début</span>" },{ content: "inputFilter" }], type: 'date'},
+                    { width: 100, id: 'end_date',header: [{ text: "<span class='headers-tertiary' >Fin</span>" },{ content: "inputFilter" }], type: 'date'},
                     {
                         width: 160, id: 'status',
                         header: [{ text: "Status" }, { content: "selectFilter" }],
@@ -129,22 +140,40 @@ export default {
                         options: ["Renewal", "Extension", "New Contract"]
                     },
                     { width: 100, id: 'comments',header: [{ text: "Comments" },{ content: "inputFilter" }] },
-                    { width: 100, id: 'ressource',header: [{ text: "Ressource" },{ content: "inputFilter" }] },
+                    // { width: 100, id: 'ressource',header: [{ text: "Ressource" },{ content: "inputFilter" }] },
                     { width: 100, id: 'duration',header: [{ text: "Jours" },{ content: "inputFilter" }]},
                     { hidden: true, id: 'progress',header: [{ text: "Progress" }]},
                     { hidden: true, id: 'parent',header: [{ text: "Parent" }]},
                     { hidden: true, id: 'id',header: [{ text: "Id" }]},
                 ],
+                rowCss: function (row) {
+                    return row.type === "project" ? "project_row" : "task_row"
+                },
                 // data: this.gridData,
                 selection: "cell",
                 editable: this.topRole.canUpdate,
                 autoWidth: true,
                 resizable: true,
-                height: window.innerHeight*0.95,
-                keyNavigation: true
+                keyNavigation: true,
+                height: window.screen.availHeight*0.95,
             };
 
         this.grid = new TreeGridDHX(this.$refs.container, config);
+
+        // for(let title of this.groupsTitle.primary) {
+        //     var doc = document.querySelector('[title="'+ title +'"]');
+        //     doc.classList.add("header_primary");
+        // }
+
+        // for(let title of this.groupsTitle.secondary) {
+        //     var doc = document.querySelector('[title="'+ title +'"]');
+        //     doc.classList.add("header_secondary");
+        // }
+
+        // for(let title of this.groupsTitle.tertiary) {
+        //     var doc = document.querySelector('[title="'+ title +'"]');
+        //     doc.classList.add("header_tertiary");
+        // }
 
         // this.grid.events.on("FilterChange", function(value,colId,filter){
         //     console.log("You've entered "+value+" into the "+colId+" column");
@@ -271,13 +300,39 @@ export default {
                 console.log(e);
             });
         },
-        clearGrid() {
-      this.submitted = false;
-      this.grid.destructor() ;
-    }
+    },
+    watch:{
+        '$route' (to, from){
+            console.log(to, from);
+            this.grid.destructor() ;
+        },
     },
   }
 </script>
 <style>
-@import "~dhx-suite/codebase/suite.min.css";
+    @import "~dhx-suite/codebase/suite.min.css";
+    
+    .project_row {
+        background: RGB(26, 149, 219, 0.8);
+    }
+
+    /*.dhx_first-column-cell {
+        background: RGB(26, 149, 219, 0.8);
+    }
+
+    .header_primary{
+        background: RGB(26, 149, 219, 0.8);
+    }
+
+    .header_secondary{
+        background: RGB(224, 189, 11);
+    }
+
+    .header_tertiary{
+        background: RGB(204, 111, 4);
+    }*/
+
+    .task_row {
+        background: RGB(57, 81, 94, 0.3);
+    }
 </style>

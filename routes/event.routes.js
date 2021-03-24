@@ -7,20 +7,35 @@ module.exports = app => {
     //Create a new event
     router.post("/",[authJwt.verifyToken], events.create);
 
+    //Get All events
+    router.get("/", [authJwt.verifyToken, authJwt.isAdmin], events.findAllEvents);
+
+    //Get All admin events
+    router.get("/month/admin", [authJwt.verifyToken, authJwt.isAdmin], events.findAllEventsPerMonth);
+    
+    //Get All pm events
+    router.get("/pm/:pm", [authJwt.verifyToken, authJwt.isPm], events.findAllPmEvents);
+
+    //Get All kam events
+    router.get("/kam/:kam", [authJwt.verifyToken, authJwt.isKam], events.findAllKamEvents);
+
     //Retrieve all Owner's events
     router.get("/user/:user",[authJwt.verifyToken], events.findAllOwnerEvents);
 
+    //Get All pm events
+    router.get("/month/pm/:pm", [authJwt.verifyToken, authJwt.isPm], events.findAllPmEventsPerMonth);
+
+    //Get All kam events
+    router.get("/month/kam/:kam", [authJwt.verifyToken, authJwt.isKam], events.findAllKamEventsPerMonth);
+
+    //Retrieve all Owner's events
+    router.get("/month/user/:user",[authJwt.verifyToken], events.findAllOwnerEventsPerMonth);
+
     //Update an event
-    router.put("/:id",[authJwt.verifyToken,  authJwt.isPm || authJwt.isKam ], events.update);
+    router.put("/:id",[authJwt.verifyToken], events.update);
 
     //Delete an event with id
-    router.delete("/:id", [authJwt.verifyToken, authJwt.isAdmin], events.delete)
-
-    //Get All events
-    router.get("/", [authJwt.verifyToken, authJwt.isAdmin], events.findAll);
-
-    //Get All events
-    router.get("/admin", [authJwt.verifyToken, authJwt.isAdmin], events.findAdminEvents);
+    router.delete("/:id", [authJwt.verifyToken], events.delete)
   
     app.use('/api/events', router);
   };
