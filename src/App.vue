@@ -15,7 +15,10 @@
           <router-link class="nav-link" to="/grid">Grid</router-link>
         </li>
         <li class="nav-item">
-          <router-link class="nav-link" to="/scheduler">Pointage</router-link>
+          <router-link class="nav-link" to="/scheduler">Pointings</router-link>
+        </li>
+        <li class="nav-item">
+          <router-link class="nav-link" to="/scheduler-admin">Dashboard</router-link>
         </li>
         <li v-if="showAdminBoard" class="nav-item">
           <router-link to="/admin" class="nav-link">Administration</router-link>
@@ -132,4 +135,5 @@ export default {
 .app-content{
  min-height: 80%;
 }
+
 </style>

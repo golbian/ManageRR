@@ -6,6 +6,7 @@ class projectServices {
     getAllProject(filters) {
       const query = new URLSearchParams({
         search: filters.search,
+        client: filters.client,
         sort_value: filters.sort.value,
         sort_type: filters.sort.type,
       }).toString();
@@ -20,6 +21,7 @@ class projectServices {
     getAllPmProject(pm, filters) {
       const query = new URLSearchParams({
         search: filters.search,
+        client: filters.client,
         sort_value: filters.sort.value,
         sort_type: filters.sort.type,
       }).toString();
@@ -30,6 +32,7 @@ class projectServices {
     getAllKamProject(kam, filters) {
       const query = new URLSearchParams({
         search: filters.search,
+        client: filters.client,
         sort_value: filters.sort.value,
         sort_type: filters.sort.type,
       }).toString();
@@ -37,9 +40,10 @@ class projectServices {
       return http.get(`/projects/kam/${kam}?`+ query,{ headers: authHeader() });
     }
 
-    findAllRessourceProject(resource, filters) {
+    getAllResourceProject(resource, filters) {
       const query = new URLSearchParams({
         search: filters.search,
+        client: filters.client,
         sort_value: filters.sort.value,
         sort_type: filters.sort.type,
       }).toString();

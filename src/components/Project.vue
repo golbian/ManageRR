@@ -823,4 +823,37 @@ html, body{
 .fa-times {
   color: red;
 }
+
+.project_row {
+        background: RGB(26, 149, 219, 0.8);
+    }
+
+    .dhx_first-column-cell {
+        background: RGB(26, 149, 219, 0.8);
+    }
+
+    [title="Designation"], [title="Country"],[title="Client"], [title="Contact"] {
+        background: RGB(26, 149, 219, 0.8);
+    }
+
+    [title="Stage"], [title="KAM"],[title="PM"], [title="TEMP"],  [title="Domaine"] {
+        background: RGB(224, 189, 11);
+    }
+
+    [title="Charge"], [title="ETP"],[title="Debours"], [title="Début"],  [title="Fin"] {
+        background: RGB(204, 111, 4);
+    }
+    
+    [title="Status"], [title="Comments"],[title="Jours"]{
+        background: RGB(26, 149, 219, 0.8);
+    }
+    
+    .headers-tertiary {
+        background: RGB(204, 111, 4);
+    }
+
+    .task_row {
+		background: RGB(57, 81, 94, 0.3);
+	}
+    
 </style>

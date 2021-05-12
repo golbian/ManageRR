@@ -1,85 +1,19 @@
 <template>
     <div ref="container">
+        <div class="btn-group" role="group" v-on:click="changeRole(role)" v-for="role in $store.state.auth.user.roles" :key="role._id">
+            <v-btn type="radio" class="btn btn-check" name="btnrole" :value="role._id" color="#0288d1">
+                {{role.name}}
+            </v-btn>
+        </div>
         <div id="layout">
-            <modal name="lightboxModal" height="auto" :scrollable="true">
-                    <form name="form" id="form"  class="m-5" v-on:submit.prevent="submitEvent(editedEvent)">
-                    <h4 class="text-center">{{editedEvent.name}}</h4>
-                    <div class="form-group">
-                            <label for="text">Name</label>
-                            <input
-                            id="input_text"
-                            v-model="editedEvent.name"
-                            v-validate="'required|min:3|max:15'"
-                            type="text"
-                            class="form-control"
-                            name="text"
-                            />
-                            <div
-                            v-if="submitted && errors.has('text')"
-                            class="alert-danger"
-                            >{{errors.first('text')}}</div>
-                    </div>
-                    <div class="form-group">
-                            <label for="client">Client</label>
-                            <input
-                            id="input_client"
-                            v-model="editedEvent.client"
-                            v-validate="'required|min:3|max:25'"
-                            type="text"
-                            class="form-control"
-                            name="client"
-                            />
-                            <div
-                            v-if="submitted && errors.has('client')"
-                            class="alert-danger"
-                            >{{errors.first('client')}}</div>
-                    </div>
-                    <div class="form-group">
-                            <label for="deliverable">Livrable</label>
-                            <input
-                            id="input_deliverable"
-                            v-model="editedEvent.deliverable"
-                            v-validate="'required|min:3|max:25'"
-                            type="text"
-                            class="form-control"
-                            name="deliverable"
-                            />
-                            <div
-                            v-if="submitted && errors.has('deliverable')"
-                            class="alert-danger"
-                            >{{errors.first('deliverable')}}</div>
-                    </div>
-                    <div class="form-group roles-check row  mt-5">
-
-                    <div class="form-group col-sm-8 text-center">
-                        <label for="tps">Time Spent</label>
-                        <input 
-                        id="input_name"
-                            v-model="editedEvent.tps"
-                            type="range"
-                            class="form-control"
-                            name="tps"
-                            min="0"
-                            max="8"
-                        >
-                        <p><strong>{{editedEvent.tps}} hours</strong></p>
-                    </div>
-                    <div class="col-sm-4 mt-4">
-                        <toggle-button id="input_insitu" @change="updateInsitu(editedEvent.insitu)" color="#007bff" :width="100" :height="45" :value="editedEvent.insitu" :sync="true" :labels="{checked: 'In-Situ', unchecked: 'In-Situ'}" />
-                    </div>
-                    </div>
-                    <div class="form-group">
-                        <button v-if="!editedEvent.createdAt" class="btn btn-primary btn-block">Create</button>
-                        <button v-else class="btn btn-primary btn-block">Save</button>
-                    </div>
-                </form>
-            </modal>
+        <modal v-if="showModal" @close="showModal=false" :editedEvent="editedEvent"></modal>
         </div>
     </div>
 </template>
 
 <script>
-import scheduler from "dhtmlx-scheduler";
+import "dhtmlx-scheduler";
+import modal from './Modal.vue';
 import 'dhtmlx-scheduler/codebase/ext/dhtmlxscheduler_limit.js';
 import 'dhtmlx-scheduler/codebase/ext/dhtmlxscheduler_editors.js';
 import 'dhtmlx-scheduler/codebase/ext/dhtmlxscheduler_outerdrag.js';
@@ -94,16 +28,29 @@ import EventServices from '../services/event.service';
 // import UserServices from '../services/user.service';
 import moment from 'moment';
 export default {
+    components: {
+      modal,
+    },
+    name: 'scheduler',
+    props: {
+        events: {
+            default () {
+                return {events: []}
+            }
+        }
+    },
     data () {
         return {
             tree: null,
-            scheduler: scheduler,
-            timePicker: null,
             documents: [],
-            user: {},
-            events: [],
-            submitted: false,
-            successful: false,
+            scheduler: scheduler,
+            filters: {
+                sort: {
+                    value: 1,
+                    type: "name",
+                },
+                search: "",
+            },
             editedEvent: {
                 text: null,
                 deliverable: null,
@@ -116,63 +63,72 @@ export default {
             project_id: null,
             scheduler_data: null,
             focusedItem: null,
+            showModal: false,
         }
     },
     computed: {
         currentUser() {
             return this.$store.state.auth.user;
         },
+        topRole() {
+            var getHighestPrivilege = this.$store.state.auth.user.roles.length
+            return this.$store.state.auth.user.roles[getHighestPrivilege - 1]
+        },
+        selectedRole() {
+            return this.topRole;
+        }
     },
     created: function() {
 
         this.scheduler.clearAll();
 
-        this.scheduler.deleteMarkedTimespan()
+        this.scheduler.deleteMarkedTimespan();
 
-        var dataProcessing = (response) => {
-            for (const project of response) {
-                var doc = {};
-                doc.items = [];
-                doc.value = project.name;
-                doc.id = project._id;
-                doc.opened = true;
-                for(const schedule of project.schedules) {
-                    var data = {};
-                    var item = {};
-                    if(schedule.resources.indexOf(this.currentUser._id)) {
-                        for( let i = 0 ; i < schedule.duration ; i++ ) {
-                            data.text = schedule.name;
-                            // data.holder = schedule.resources[0].username;
-                            if(!data.tps) {
-                                data.tps = 8;
-                            }
-                            data.description = schedule.comments;
-                            data.parent_name = project.name;
-                            var workTime = moment.duration(this.user.value ,'hours').add(1,'hours')
-                            data.start_date = moment(schedule.start_date, 'YYYY-MM-DD[T00:00:00.000Z]').add(i, 'd').format('YYYY-MM-DD HH:mm');
-                            data.end_date =  moment(schedule.start_date, 'YYYY-MM-DD[T00:00:00.000Z]').add(i, 'd').format('YYYY-MM-DD HH:mm');
-                            data.start_date = data.start_date.replace("00:00", '09:00');
-                            data.end_date = data.end_date.replace("00:00", moment(data.start_date).add(workTime).format('HH:mm'));
+        // var getProjectService = (role, filters) => {
+        //     if(role.name === "user") {
+        //         return ProjectServices.getAllResourceProject(this.currentUser._id, filters)
+        //     } else if(role.name === "pm") {
+        //         return ProjectServices.getAllPmProject( this.currentUser.sigle, filters)
+        //     } else if (role.name === "kam") {
+        //         return ProjectServices.getAllKamProject(this.currentUser.sigle, filters)
+        //     } else {
+        //         return ProjectServices.getAllProject(filters)
+        //     }
+        // }
 
-                            this.events.push(data);
-                        }
-                    }
-                    item = data;
-                    item.value = schedule.name;
-                    item.id = schedule._id;
-                    item.icon = {
-                        "folder": "fas fa-book",
-                        "openFolder": "fas fa-book-open",
-                        "file": "fas fa-file"
-                    }
-                    doc.items.push(item);
-                }
-                this.documents.push(doc);
-            }
-        }
+        // var dataProcessing = (response) => {
+        //     for (const project of response) {
+        //         var doc = {};
+        //         doc.items = [];
+        //         doc.value = project.name;
+        //         doc.id = project._id;
+        //         doc.opened = true;
+        //         for(const schedule of project.schedules) {
+        //             schedule.text = schedule.name;
+        //             if(!schedule.tps) {
+        //                 schedule.tps = 8;
+        //             }
+        //             schedule.description = schedule.comments;
+        //             schedule.parent_name = project.name;
+        //             schedule.start_date = moment(schedule.start_date, 'YYYY-MM-DD[T00:00:00.000Z]').format('YYYY-MM-DD HH:mm');
+        //             schedule.end_date =  moment(schedule.start_date, 'YYYY-MM-DD[T00:00:00.000Z]').format('YYYY-MM-DD HH:mm');
+        //             schedule.value = schedule.name;
+        //             schedule.id = schedule._id;
+        //             schedule.icon = {
+        //                 "folder": "fas fa-book",
+        //                 "openFolder": "fas fa-book-open",
+        //                 "file": "fas fa-file"
+        //             }
+        //             // this.events.push(schedule)
+        //             doc.items.push(schedule);
+        //         }
+        //         this.documents.push(doc);
+        //     }
+        // }
 
-        ProjectServices.getAllOwnerProject(this.currentUser.sigle).then(res => {
-            dataProcessing(res.data);
+        this.getProjectService(this.topRole, this.filters).then(response => {
+            this.dataProcessing(response.data);
+            this.tree.data.parse(this.documents);
         })
     },
 
@@ -194,10 +150,9 @@ export default {
             }
         };
 
-        //  dhtmlx.compat("dnd")
-
         var config = {
 				css: "dhx_layout-cell--bordered",
+                height: "90vh",
 				rows: [
 					// {
 					// 	id: "header",
@@ -211,26 +166,18 @@ export default {
 								id: "tree-cell",
 								css: "dhx_layout-cell--border_right tree",
 								width: "33vw",
-                                height: "95vh"
+                                height: "100%",
 							},
 							{
 								rows: [{
 									id: "scheduler-cell",
                                     html:"<div></div>",
                                     width:"66vw",
-                                    height: "90vh",
                                     css: "scheduler"
 								},]
 							},
 						]
 					},
-					{
-						id: "footer",
-						html: "Footer",
-						css: "dhx_layout-cell--border_top",
-						gravity: false,
-						height: "60px"
-					}
 				]
 			};
             
@@ -243,20 +190,25 @@ export default {
             css: "tree-class"
         });
 
-        // this.tree.events.on("itemClick", (id,) => {
-        //     this.editedEvent = this.tree.data.getItem(id)
-        // });
+        this.tree.events.on("itemClick", (id,) => {
+            this.editedEvent = this.tree.data.getItem(id)
+        });
 
         this.tree.selection.events.on("AfterSelect", (id) => {
             var event = this.tree.selection.getItem(id);
 
-            this.focusedItem = {
-                text: event.value,
-                tps: event.tps,
-                id: event.id,
-                name: event.text,
-                insitu: true,
-            }
+            this.focusedItem = event;
+            this.focusedItem.name = event.value;                
+            var parent = this.tree.data.getItem(event.parent);
+            // var root = this.tree.data.getItem(event.root);
+            this.focusedItem.deliverable = parent.deliverable;
+            this.focusedItem.domaine = parent.domaine;
+            this.focusedItem.project = event.parent_name;
+            this.focusedItem.insitu = true;
+            this.focusedItem.task = event.name;
+            this.focusedItem.user = this.currentUser.sigle;
+            this.focusedItem.pm = event.pm;
+            this.focusedItem.kam = event.kam;
         });
 
         this.scheduler.skin = "material";
@@ -269,9 +221,33 @@ export default {
             "next"
         ];
 
-        // scheduler.config.multi_day = true;
-        
-        // scheduler.init("scheduler", new Date(), "week");
+        layout.getCell("tree-cell").attach(this.tree);
+        layout.getCell("scheduler-cell").attach(this.scheduler);
+
+        this.scheduler.config.first_hour = 9;
+        this.scheduler.config.last_hour = 20;
+        this.scheduler.config.container_autoresize = true;
+        this.scheduler.config.dblclick_create = true;
+        this.scheduler.config.details_on_create = false;
+        this.scheduler.config.details_on_dblclick = false;
+        this.scheduler.config.responsive_lightbox = false;
+        this.scheduler.config.touch_tooltip = false;
+
+        this.scheduler.attachEvent("onBeforeLightbox", (id) => {
+            this.showModal = true;
+            var event = this.getEvent(id);
+            if(event.insitu === null || event.insitu === undefined) {
+                event.insitu = true
+            }
+
+            this.editedEvent = event;
+            return false
+        });
+
+        this.scheduler.attachEvent("onDragEnd", (id, mode, e) => {
+            const ev = this.scheduler.getEvent(id);
+            EventServices.update(ev.id, ev);
+        });
 
         this.scheduler.attachEvent("onSchedulerReady", () => {
             this.scheduler.templates.event_bar_date = function(start,end,event){
@@ -282,58 +258,34 @@ export default {
             });
         });
 
-        layout.getCell("tree-cell").attach(this.tree);
-        layout.getCell("scheduler-cell").attach(this.scheduler);
-
-        this.scheduler.config.first_hour = 9;
-        this.scheduler.config.last_hour = 20;
-        this.scheduler.config.container_autoresize = true;
-        this.scheduler.config.dblclick_create = true;
-        this.scheduler.config.details_on_create = true;
-        this.scheduler.config.details_on_dblclick = true;
-        this.scheduler.config.responsive_lightbox = true;
-        this.scheduler.config.touch_tooltip = false;
-
-        this.scheduler.attachEvent("onBeforeLightbox", (id) => {
-            this.$modal.show('lightboxModal')
-            var event = this.getEvent(id);
-            if(event.insitu === null || event.insitu === undefined) {
-                event.insitu = true
-            }
-
-            this.editedEvent = event;
-            return false
-        })
-
-        EventServices.getAllOwnerEvents(this.currentUser.id).then( response => {
+        this.getEventService(this.topRole).then( response => {
             for(const event of response.data) {
                 event.id = event._id
                 event.text = event.name
-                console.log(event)
             }
             this.scheduler_data = response.data;
         })
 
-        // this.submitEvent = (ev) => {
-        //     if(!ev.createdAt) {
-        //         var query = {
-        //             projectId: ev.project_id,
-        //             scheduleId: ev.schedule_id
-        //         }
-        //         ev.owner = this.currentUser.id;
-        //         ev.name = ev.project.text;
-        //         ev.tps = ev.project.tps;
-        //         EventServices.createEvent(ev).then(data => {
-        //             this.tree.selection.remove();
-        //             this.editedEvent = null;
-        //         })
-        //     } else {
-        //         EventServices.updateEvent(ev.id, ev).then(data => {
-        //             this.tree.selection.remove();
-        //             this.editedEvent = null;
-        //         })
-        //     }
-        // }
+        this.submitEvent = (ev) => {
+            if(!ev.createdAt) {
+                ev.user = this.currentUser.sigle;
+                ev.name = ev.project.text;
+                ev.tps = ev.project.tps;
+                ev.project_id = ev.parent;
+                ev.schedule_id = ev._id;
+                ev.month = moment(ev.start_date).format("MMMM");
+                ev.year = moment(ev.start_date).year();
+                EventServices.createEvent(ev).then(data => {
+                    this.tree.selection.remove();
+                    this.editedEvent = null;
+                })
+            } else {
+                EventServices.updateEvent(ev.id, ev).then(data => {
+                    this.tree.selection.remove();
+                    this.editedEvent = null;
+                })
+            }
+        }
 
         this.scheduler.addMarkedTimespan({
             days:  [6,0],
@@ -350,38 +302,101 @@ export default {
         });
     },
     methods: {
-        updateInsitu(insitu) {
-            if(insitu === true) {
-            this.editedEvent.insitu = false
-            } else {
-            this.editedEvent.insitu = true
+        // updateInsitu(insitu) {
+        //     if(insitu === true) {
+        //     this.editedEvent.insitu = false
+        //     } else {
+        //     this.editedEvent.insitu = true
+        //     }
+        // },
+        // submitEvent(ev) {
+        //     if(!ev.createdAt) {
+        //         // var query = {
+        //         //     projectId: ev.project_id,
+        //         //     scheduleId: ev.schedule_id
+        //         // }
+        //         ev.owner = this.currentUser.id;
+        //         EventServices.createEvent(ev).then(data => {
+        //             console.log(data)
+        //             this.tree.selection.remove();
+        //             this.editedEvent = {};
+        //         })
+        //     } else {
+        //         EventServices.updateEvent(ev.id, ev).then(data => {
+        //             console.log(data)
+        //             this.tree.selection.remove();
+        //             this.editedEvent = {};
+        //         })
+        //     }
+        // },
+        
+        dataProcessing (response) {
+            this.documents = [];
+            for (const project of response) {
+                var doc = {};
+                doc.items = [];
+                doc.value = project.name;
+                doc.id = project._id;
+                doc.opened = true;
+                for(const schedule of project.schedules) {
+                    schedule.text = schedule.name;
+                    if(!schedule.tps) {
+                        schedule.tps = 8;
+                    }
+                    schedule.description = schedule.comments;
+                    schedule.parent_name = project.name;
+                    schedule.start_date = moment(schedule.start_date, 'YYYY-MM-DD[T00:00:00.000Z]').format('YYYY-MM-DD HH:mm');
+                    schedule.end_date =  moment(schedule.start_date, 'YYYY-MM-DD[T00:00:00.000Z]').format('YYYY-MM-DD HH:mm');
+                    schedule.value = schedule.name;
+                    schedule.id = schedule._id;
+                    schedule.icon = {
+                        "folder": "fas fa-book",
+                        "openFolder": "fas fa-book-open",
+                        "file": "fas fa-file"
+                    }
+                    // this.events.push(schedule)
+                    doc.items.push(schedule);
+                }
+                this.documents.push(doc);
             }
         },
-        submitEvent(ev) {
-            if(!ev.createdAt) {
-                // var query = {
-                //     projectId: ev.project_id,
-                //     scheduleId: ev.schedule_id
-                // }
-                ev.owner = this.currentUser.id;
-                EventServices.createEvent(ev).then(data => {
-                    console.log(data)
-                    this.tree.selection.remove();
-                    this.editedEvent = {};
-                })
+        getProjectService(role, filters) {
+            if(role.name === "user") {
+                return ProjectServices.getAllResourceProject(this.currentUser.id, filters)
+            } else if(role.name === "pm") {
+                return ProjectServices.getAllPmProject( this.currentUser.sigle, filters)
+            } else if (role.name === "kam") {
+                return ProjectServices.getAllKamProject(this.currentUser.sigle, filters)
             } else {
-                EventServices.updateEvent(ev.id, ev).then(data => {
-                    console.log(data)
-                    this.tree.selection.remove();
-                    this.editedEvent = {};
-                })
+                return ProjectServices.getAllProject(filters)
             }
+        },
+        getEventService(role, filters) {
+            if(role.name === "user") {
+                return EventServices.getAllOwnerEvents(this.currentUser.sigle, filters)
+            } else if(role.name === "pm") {
+                return EventServices.getAllPmEvents( this.currentUser.sigle, filters)
+            } else if (role.name === "kam") {
+                return EventServices.getAllKamEvents(this.currentUser.sigle, filters)
+            } else {
+                return EventServices.getAllEvents(filters)
+            }
+        },
+        changeRole(role) {
+            this.getProjectService(role, this.filters).then(response => {
+                this.dataProcessing(response.data);
+                this.tree.data.parse(this.documents);
+            })
         },
         getEvent(id) {
             if(this.focusedItem) {
-                var event = this.scheduler.getEvent(id)
+                var event = this.scheduler.getEvent(id);
+
                 this.focusedItem.start_date = event.start_date;
                 this.focusedItem.end_date = event.end_date;
+
+                // this.focusedItem.pointage = 
+                console.log(event)
                 return this.focusedItem;
             } else {
                 return this.scheduler.getEvent(id)
@@ -410,12 +425,18 @@ export default {
 
             this.project_select_options = project_options;
         },
-        events: function() {
-            this.tree.data.parse(this.documents);
-            console.log(this.documents)
-        },
         scheduler_data: function() {
             this.scheduler.parse(this.scheduler_data);
+        },
+        showModal: function() {
+            this.scheduler.clearAll();
+            this.getEventService(this.topRole).then( response => {
+            for(const event of response.data) {
+                event.id = event._id
+                event.text = event.name
+            }
+            this.scheduler_data = response.data;
+        })
         }
     }
 }
@@ -428,7 +449,6 @@ export default {
     body {
 		margin: 0px;
 		padding: 0px;
-		overflow: hidden;
 	}
 
     .week-end {
@@ -449,6 +469,10 @@ export default {
 
     .card-text .text-muted {
         color: white !important;
+    }
+
+    .tree {
+        overflow: scroll;
     }
 
     .tree-class {

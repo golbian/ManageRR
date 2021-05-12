@@ -3,10 +3,17 @@ const mongoose = require("mongoose");
 const Project = db.project;
 
 var getName = function( search ) {
-  return search == undefined ? null
-       : search == "undefined" ? null
-       : search == "" ? null
+  return search == undefined ? ""
+       : search == "undefined" ? ""
+       : search == "" ? ""
        : new RegExp(search, 'i')
+}
+
+var getClient = function( client ) {
+  return client == undefined ? ""
+       : client == "undefined" ? ""
+       : client == "" ? ""
+       : new RegExp(client, 'i')
 }
 
 // Create and Save a new Project
@@ -22,6 +29,7 @@ exports.create = (req, res) => {
     name: req.body.name,
     type: req.body.type,
     client: req.body.client,
+    contact: req.body.contact,
     duration: req.body.duration,
     status: req.body.status,
     start_date: req.body.start_date,
@@ -38,7 +46,6 @@ exports.create = (req, res) => {
     ca: req.body.ca,
     comments: req.body.comments,
     country: req.body.country,
-    published: req.body.published,
   });
 
   // Save Project in the database
@@ -58,14 +65,14 @@ exports.create = (req, res) => {
 // Retrieve all Projects from the database.
 exports.findAll = (req, res) => {
 
-    if(getName(req.query.search) === null) {
+    if(getName(req.query.search) === "" && getClient(req.query.client) === "") {
       var aggregation = [
         { $addFields: { total: { $sum: "$schedules.charge" } } },
         { $sort: { [req.query.sort_type]: parseInt(req.query.sort_value)} }
       ]
     } else {
       var aggregation = [
-        { $match: { name: { $regex: getName(req.query.search) } } },
+        { $match: { name: { $regex: getName(req.query.search) }, client: {$regex: getClient(req.query.client) } } },
         { $addFields: { total: { $sum: "$schedules.charge" } } },
         { $sort: { [req.query.sort_type]: parseInt(req.query.sort_value)} }
       ]
@@ -241,15 +248,19 @@ exports.findAllPublished = (req, res) => {
 
   exports.findAllPmProject = (req, res) => {
     const pm = req.params.pm;
-    if(getName(req.query.search) === null) {
+    if(getName(req.query.search) === "" && getClient(req.query.client) === "") {
       var aggregation = [
-        { $match: { pm: pm } },
+        { $match: {$or: [
+          {pm: pm}, 
+          {'schedules.pm': pm}
+          ]} 
+        },  
         { $addFields: { total: { $sum: "$schedules.charge" } } },
         { $sort: { [req.query.sort_type]: parseInt(req.query.sort_value)} }
       ]
     } else {
       var aggregation = [
-        { $match: { pm:pm , name: { $regex: getName(req.query.search) } } },
+        { $match: { pm:pm , name: { $regex: getName(req.query.search) }, client: {$regex: getClient(req.query.client)} } },
         { $addFields: { total: { $sum: "$schedules.charge" } } },
         { $sort: { [req.query.sort_type]: parseInt(req.query.sort_value)} }
       ]
@@ -277,7 +288,7 @@ exports.findAllPublished = (req, res) => {
 
   exports.findAllKamProject = (req, res) => {
     const kam = req.params.kam;
-    if(getName(req.query.search) === null) {
+    if(getName(req.query.search) === "" && getClient(req.query.client) === "") {
       var aggregation = [
         { $match: { kam: kam } },
         { $addFields: { total: { $sum: "$schedules.charge" } } },
@@ -285,7 +296,7 @@ exports.findAllPublished = (req, res) => {
       ]
     } else {
       var aggregation = [
-        { $match: { kam:kam , name: { $regex: getName(req.query.search) } } },
+        { $match: { kam:kam , name: { $regex: getName(req.query.search) }, client: {$regex: getClient(req.query.client)}} },
         { $addFields: { total: { $sum: "$schedules.charge" } } },
         { $sort: { [req.query.sort_type]: parseInt(req.query.sort_value)} }
       ]
@@ -313,15 +324,22 @@ exports.findAllPublished = (req, res) => {
 
   exports.findAllResourceProject = (req, res) => {
     const resource = req.params.resource;
+
+    if(getName(req.query.search) === "" && getClient(req.query.client) === "") {
+      var aggregation = [
+        { $match: { "schedules.resources._id":resource } },
+        { $addFields: { total: { $sum: "$schedules.charge" } } },
+        { $sort: { [req.query.sort_type]: parseInt(req.query.sort_value)} }
+      ]
+    } else {
+      var aggregation = [
+        { $match: { "schedules.resources._id":resource , name: { $regex: getName(req.query.search) } } },
+        { $addFields: { total: { $sum: "$schedules.charge" } } },
+        { $sort: { [req.query.sort_type]: parseInt(req.query.sort_value)} }
+      ]
+    }
     Project.find().then(()=>{
-      return Project.aggregate([
-        { $match: { "$schedules.$resources.resource_id": resource } },
-        {
-          $addFields: {
-            total: { $sum: "$schedules.charge" },
-          }
-        },
-    ]).exec(function(err, data) {
+      return Project.aggregate(aggregation).exec(function(err, data) {
       /*Project.populate(doc, {
         path: 'schedules.resources',
         populate: { path: 'resources' },

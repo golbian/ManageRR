@@ -9,7 +9,6 @@
 <script>
 import {Gantt} from 'dhtmlx-gantt';
 import { Toolbar as ToolbarDHX } from 'dhx-suite';
-// import {Toolbar as ToolbarDHX} from 'dhx-suite';
 
 import ProjectServices from '../services/project.service';
 import ScheduleServices from '../services/schedule.service';
@@ -33,6 +32,7 @@ export default {
                     type: "name",
                 },
                 search: "",
+                client: "",
             }
         };
     },
@@ -89,6 +89,15 @@ export default {
             {
                 "id": "sortProject",
                 "html": "<span>Sort by name <i class='fas fa-sort'></i></span>",
+                "type": "button",
+                "twoState": true,
+            },
+            {
+                "type": "separator"
+            },
+            {
+                "id": "sortClient",
+                "html": "<span>Sort by client <i class='fas fa-sort'></i></span>",
                 "type": "button",
                 "twoState": true,
             },
@@ -161,13 +170,28 @@ export default {
                 type:"spacer"
             },
             {
-                "id": "searchProject",
+                "id": "searchClient",
                 "type": "input",
-                "placeholder": "Search a Project",
+                "placeholder": "Search By Client",
                 "icon": "mdi mdi-magnify",
             },
             {
-                "id": "search",
+                "id": "search_client",
+                "type": "button",
+                "html": "<i class='fas fa-search'></i>",
+                tooltip: "Filter"
+            },
+            {
+                type:"spacer"
+            },
+            {
+                "id": "searchProject",
+                "type": "input",
+                "placeholder": "Search By Designation",
+                "icon": "mdi mdi-magnify",
+            },
+            {
+                "id": "search_name",
                 "type": "button",
                 "html": "<i class='fas fa-search'></i>",
                 tooltip: "Filter"
@@ -184,7 +208,7 @@ export default {
 
         var getProjectService = (role, filters) => {
             if(role.name === "user") {
-                return ProjectServices.getAllResourceProject(this.currentUser._id, filters)
+                return ProjectServices.getAllResourceProject(this.currentUser.id, filters)
             } else if(role.name === "pm") {
                 return ProjectServices.getAllPmProject( this.currentUser.sigle, filters)
             } else if (role.name === "kam") {
@@ -214,9 +238,18 @@ export default {
              }
 
                 switch (id) {
-                    case "search" : {
+                    case "search_name" : {
                         gantt.clearAll()
                         this.filters.search = toolbar.getState("searchProject").searchProject
+                        getProjectService(this.topRole, this.filters).then(response => {
+                            processData(response.data);
+                            
+                        })
+                        break;
+                    }
+                    case "search_client" : {
+                        gantt.clearAll()
+                        this.filters.client = toolbar.getState("searchClient").searchClient
                         getProjectService(this.topRole, this.filters).then(response => {
                             processData(response.data);
                             
@@ -229,11 +262,28 @@ export default {
                         if(button.active == true) {
                             this.filters.sort.value = -1
                             this.filters.sort.type = "name"
-                            button.html = "<span>Sort by name "+sortDown+"</span>"
+                            button.html = "<span>Sort by Designation "+sortDown+"</span>"
                         } else {
                             this.filters.sort.value = 1
                             this.filters.sort.type = "name"
                             button.html = "<span>Sort by name "+sortUp+"</span>"
+                        }
+                        getProjectService(this.topRole, this.filters).then(response => {
+                            processData(response.data);
+                        })
+                        break;
+                    }
+                    case "sortClient": {
+                        gantt.clearAll()
+                        let button = toolbar.data.getItem('sortClient')
+                        if(button.active == true) {
+                            this.filters.sort.value = -1
+                            this.filters.sort.type = "client"
+                            button.html = "<span>Sort by client "+sortDown+"</span>"
+                        } else {
+                            this.filters.sort.value = 1
+                            this.filters.sort.type = "client"
+                            button.html = "<span>Sort by client "+sortUp+"</span>"
                         }
                         getProjectService(this.topRole, this.filters).then(response => {
                             processData(response.data);
@@ -525,7 +575,8 @@ export default {
         var colHeader = '<div class="gantt_grid_head_add" style="border-left: 1px solid #cecece !important;" role="button" aria-label="New task" data-column-id="add" ></div>';
 
         gantt.config.columns = [
-                {name: "text", label: "Name", tree: true, width: 120, resize: true},
+                {name: "text", label: "Designation", align: "center", tree:true, width: 120, resize: true},
+                {name: "client", label: "Client", align: "center", width: 100, resize: true},
                 {name: "start_date", align: "center", resize: true},
                 {name: "resources", align: "center", width: 80, label: "Resources", resize: true,
                     template: function (task) {
@@ -557,11 +608,14 @@ export default {
                 {name: "duration", width: 80, align: "center", resize: true},
                 {name: "charge", width: 80, align: "center", resize: true, label: "Charge",
                     template: function(task) {
-                        
-                        // if (task.type == gantt.config.types.project) {
-                        // }
                         var result = "";
+                        if(task.total) {
+                            result += "<div class='charge-label' title='" + task.total + "'>" + task.total + "</div>";
+                            console.log(task)
+                        } else  {
                             result += "<div class='charge-label' title='" + task.charge + "'>" + task.charge + "</div>";
+                        }
+                       
                             return result;
                     }
                 },
@@ -683,8 +737,10 @@ export default {
             // dataset.type = project.type;
             dataset.parent = project.parent;
             dataset.text = project.name;
+            dataset.wbs = project.wbs;
             dataset.duration = project.duration
             dataset.charge = project.charge;
+            dataset.total = project.total;
             dataset.start_date = startDate;
             dataset.end_date = endDate;
             // dataset.end_date_revised = endDateRevised;

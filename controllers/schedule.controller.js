@@ -30,8 +30,6 @@ exports.create = (req, res) => {
             message: "Error creating Schedule"
           });
         }
-
-        
       }
     })
 };

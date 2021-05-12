@@ -15,16 +15,16 @@ exports.upload =  (req, res) => {
     // ignoreEmpty: true,
     delimiter: ","
   })
-  .fromFile(req.file.path)
+  .fromFile(req.file.path, {defaultEncoding: 'UTF8'})
   .then((file)=>{
     var projects = [];
   // var schedules = [];
-  var parentWbs;
 
   var pushToProject = function(parentWbs, schedule) {
+    console.log(parentWbs)
     for(const project of projects) {
       if(project.wbs === parentWbs) {
-        schedule.parent = project._id;
+        schedule.parent = project._id
         project.schedules.push(schedule);
       }
     }
@@ -32,60 +32,70 @@ exports.upload =  (req, res) => {
 
   for( const item of file ) {
     var data = {
-      wbs: item["REF"],
+      wbs: item["REFERENCE"],
+      type: item["NIVEAU"],
       name: item["Designation"],
-      country: item["Country"],
       client: item["Client"],
+      contact: item["Contact"],
+      country: item["Country"],
+      stage: item["STAGE"],
       kam: item["KAM"],
       pm: item["PM"],
-      stage: item["STAGE"],
-      temp: item["T°"],
-      domain: item["Domain"],
-      offre: item["OFFRE"],
+      temp: item["TEMP"],
+      domaine: item["DOMAINE"],
       cmde: item["CMDE"],
+      cmde_link: item["LIEN_CMDE"],
+      bl: item["BL"],
+      bl_chrono: item["CHRONO_BL"],
       facture: item["FACTURE"],
-      idFacture: item["idFACTURE"],
+      facture_link: item["LIEN_FACTURE"],
+      facture_id: item["idLigne FACTURE"],
+      facture_date: item["DATE FACTURE"],
+      regt_initial: item["REGT ATTENDU"],
+      regt_expect: item["REGT ESPERE"],
+      regt_final: item["REGT EFFECTIF"],
       etp: item["ETP"],
-      charge: item[" CHARGE "],
+      charge: item["CHARGE"],
+      rate: item["TAUX"],
       ca: item["CA"],
       debours: item["DEBOURS"],
-      start_date: item["Start Date"],
-      end_date: item["End Date (initial)"],
-      end_date_revised: item["End Date (revised)"],
+      start_date: item["DEBUT"],
+      end_date: item["FIN"],
+      end_date_revised: item["FIN (REVISEE)"],
       tpelig: item["TPELIG"],
       status: item["Status"],
       comments: item["Comments"],
-      duration: item["Durée (mois)"],
+      duration: item["DUREE"],
     }
 
-    console.log(item)
-
-    data.start_date = moment(data.start_date, '').format('YYYY-MM-DD[T00:00:00.000Z]');
-    data.end_date = moment(data.end_date, '').format('YYYY-MM-DD[T00:00:00.000Z]');
-    data.end_date_revised = moment(data.end_date_revised, '').format('YYYY-MM-DD[T00:00:00.000Z]');
+    data.start_date = moment(data.start_date, 'DD-MM-YYYY').format('YYYY-MM-DD[T00:00:00.000Z]');
+    data.end_date = moment(data.end_date, 'DD-MM-YYYY').format('YYYY-MM-DD[T00:00:00.000Z]');
+    data.end_date_revised = moment(data.end_date_revised, 'DD-MM-YYYY').format('YYYY-MM-DD[T00:00:00.000Z]');
 
     for(var i in data) {
       if(data[i] == undefined) {
         data[i] = "";
-      }
-        var wbs = data.wbs + "";
-        data._id = wbs;
-        var parts = wbs.split(".");
-        parts.pop();
-        data.parent = parts.join(".");
+      }   
     }
+    let regex = new RegExp(/([A-Z])\w+/g)
+    var wbsExtractDate = data.wbs.match(regex)
+    var parts = wbsExtractDate;
+    if(parts) {
+      data.nestedLevel = parts.length -1;
 
-    if(data.wbs) {
-      if(data.parent == '') {
-        data._id = new mongoose.mongo.ObjectId();
-        parentWbs = data.wbs
-        data.type = 'project'
-        data.schedules = []
-        projects.push(data)
-      } else {
-        data.nestedLevel = 1;
-        data.type = 'task';
-        pushToProject(parentWbs, data)
+      if(data.wbs || data.wbs !== "") {
+        if(data.nestedLevel == 0) {
+          data._id = new mongoose.mongo.ObjectId();
+          // parentWbs = data.wbs
+          data.type = 'project'
+          data.schedules = []
+          projects.push(data)
+        } else {
+          data.type = 'task';
+          parts.pop()
+          data.parent= parts.join('.')
+          pushToProject(data.parent, data)
+        }
       }
     }
   }
@@ -111,7 +121,9 @@ exports.upload =  (req, res) => {
         }
       }
     }
+
   }
+  console.log(projects[77])
 
   // Save Project in the database
   Project

@@ -59,10 +59,9 @@ export default {
     // });
   },
   methods: {
-      selectFile() {
+    selectFile() {
       this.selectedFiles = this.$refs.file.files;
     },
-
     upload() {
       this.progress = 0;
 
