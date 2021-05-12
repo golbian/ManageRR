@@ -78,6 +78,9 @@ export default {
                     // { hidden: true, id: 'parent',header: [{ text: "Parent" }]},
                     // { hidden: true, id: '_id',header: [{ text: "Id" }]},
                 ],
+                rowCss: function (row) {
+                    return row.type === "project" ? "project_row" : "task_row"
+                },
                 // data: this.gridData,
                 selection: "cell",
                 editable: this.topRole.canUpdate,
@@ -139,5 +142,29 @@ export default {
   }
 </script>
 <style>
-@import "~dhx-suite/codebase/suite.min.css";
+    @import "~dhx-suite/codebase/suite.min.css";
+    
+    .project_row {
+        background: RGB(26, 149, 219, 0.8);
+    }
+
+    /*.dhx_first-column-cell {
+        background: RGB(26, 149, 219, 0.8);
+    }
+
+    .header_primary{
+        background: RGB(26, 149, 219, 0.8);
+    }
+
+    .header_secondary{
+        background: RGB(224, 189, 11);
+    }
+
+    .header_tertiary{
+        background: RGB(204, 111, 4);
+    }*/
+
+    .task_row {
+        background: RGB(57, 81, 94, 0.3);
+    }
 </style>

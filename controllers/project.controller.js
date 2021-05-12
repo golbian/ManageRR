@@ -3,10 +3,17 @@ const mongoose = require("mongoose");
 const Project = db.project;
 
 var getName = function( search ) {
-  return search == undefined ? null
-       : search == "undefined" ? null
-       : search == "" ? null
+  return search == undefined ? ""
+       : search == "undefined" ? ""
+       : search == "" ? ""
        : new RegExp(search, 'i')
+}
+
+var getClient = function( client ) {
+  return client == undefined ? ""
+       : client == "undefined" ? ""
+       : client == "" ? ""
+       : new RegExp(client, 'i')
 }
 
 // Create and Save a new Project
@@ -58,14 +65,14 @@ exports.create = (req, res) => {
 // Retrieve all Projects from the database.
 exports.findAll = (req, res) => {
 
-    if(getName(req.query.search) === null) {
+    if(getName(req.query.search) === "" && getClient(req.query.client) === "") {
       var aggregation = [
         { $addFields: { total: { $sum: "$schedules.charge" } } },
         { $sort: { [req.query.sort_type]: parseInt(req.query.sort_value)} }
       ]
     } else {
       var aggregation = [
-        { $match: { name: { $regex: getName(req.query.search) } } },
+        { $match: { name: { $regex: getName(req.query.search) }, client: {$regex: getClient(req.query.client) } } },
         { $addFields: { total: { $sum: "$schedules.charge" } } },
         { $sort: { [req.query.sort_type]: parseInt(req.query.sort_value)} }
       ]
@@ -241,7 +248,7 @@ exports.findAllPublished = (req, res) => {
 
   exports.findAllPmProject = (req, res) => {
     const pm = req.params.pm;
-    if(getName(req.query.search) === null) {
+    if(getName(req.query.search) === "" && getClient(req.query.client) === "") {
       var aggregation = [
         { $match: {$or: [
           {pm: pm}, 
@@ -253,7 +260,7 @@ exports.findAllPublished = (req, res) => {
       ]
     } else {
       var aggregation = [
-        { $match: { pm:pm , name: { $regex: getName(req.query.search) } } },
+        { $match: { pm:pm , name: { $regex: getName(req.query.search) }, client: {$regex: getClient(req.query.client)} } },
         { $addFields: { total: { $sum: "$schedules.charge" } } },
         { $sort: { [req.query.sort_type]: parseInt(req.query.sort_value)} }
       ]
@@ -281,7 +288,7 @@ exports.findAllPublished = (req, res) => {
 
   exports.findAllKamProject = (req, res) => {
     const kam = req.params.kam;
-    if(getName(req.query.search) === null) {
+    if(getName(req.query.search) === "" && getClient(req.query.client) === "") {
       var aggregation = [
         { $match: { kam: kam } },
         { $addFields: { total: { $sum: "$schedules.charge" } } },
@@ -289,7 +296,7 @@ exports.findAllPublished = (req, res) => {
       ]
     } else {
       var aggregation = [
-        { $match: { kam:kam , name: { $regex: getName(req.query.search) } } },
+        { $match: { kam:kam , name: { $regex: getName(req.query.search) }, client: {$regex: getClient(req.query.client)}} },
         { $addFields: { total: { $sum: "$schedules.charge" } } },
         { $sort: { [req.query.sort_type]: parseInt(req.query.sort_value)} }
       ]
@@ -318,7 +325,7 @@ exports.findAllPublished = (req, res) => {
   exports.findAllResourceProject = (req, res) => {
     const resource = req.params.resource;
 
-    if(getName(req.query.search) === null) {
+    if(getName(req.query.search) === "" && getClient(req.query.client) === "") {
       var aggregation = [
         { $match: { "schedules.resources._id":resource } },
         { $addFields: { total: { $sum: "$schedules.charge" } } },

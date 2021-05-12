@@ -1,11 +1,14 @@
 <template>
-<div ref="container" id='container' class="widget-box w-100 h-100">
+<div ref="layout">
+    <div id="menu"></div>
+    <div ref="container" id='container' class="widget-box"></div>
 </div>
 </template>
 
 <script>
-// import { Grid as GridDHX} from "dhx-grid";
-import {TreeGrid as TreeGridDHX } from 'dhx-suite';
+import { Grid as GridDHX} from "dhx-suite";
+// import {TreeGrid as TreeGridDHX } from 'dhx-suite';
+import { Toolbar as ToolbarDHX } from 'dhx-suite';
 
 import GridServices from '../services/grid.service';
 import ProjectServices from '../services/project.service';
@@ -28,17 +31,20 @@ export default {
                 },
                 search: "",
             },
-            // groupsTitle: {
-            //     primary: [
-            //         "Designation","Country","Client", "Contact","Status", "Comments","Jours"
-            //     ],
-            //     secondary: [
-            //         "Stage", "KAM","PM", "TEMP", "Domaine"
-            //     ],
-            //     tertiary: [
-            //         "Charge", "ETP","Debours", "Début", "Fin"
-            //     ],
-            // }
+            groupsTitle: {
+                project: [
+                   "client","contact", "country","stage", "kam","pm", "temp","domaine","cmde","cmde_link"
+                ],
+                financial: [
+                    "bl", "bl_chrono","facture", "facture_link", "facture_id","facture_date", "regt_initial","regt_expect", "regt_final"
+                ],
+                resources: [
+                    "charge", "rate","etp", "ca", "debours","start_date", "end_date"
+                ],
+                info: [
+                    "comments","duration"
+                ],
+            }
         };
     },
     computed: {
@@ -51,7 +57,6 @@ export default {
         }
     },
     created() {
-
         var formatDate = function(date, initFormat, exitFormat) {
             var data = moment(date, initFormat).format(exitFormat);
             return data
@@ -69,31 +74,33 @@ export default {
             }
         }
 
-            getProjectService(this.topRole, this.filters).then(response => {
-                for(const data of response.data) {
-                    data.id = data._id;
-                    data.start_date = formatDate(data.start_date, 'YYYY-MM-DD[T00:00:00.000Z]', 'DD-MM-YYYY');
-                    data.end_date = formatDate(data.end_date, 'YYYY-MM-DD[T00:00:00.000Z]', 'DD-MM-YYYY');
-                    if(data.pm) {
-                        data.pm = data.pm.username
-                    }
-                    this.dataset.push(data);
-                
-                    for(const schedule of data.schedules) {
-                        schedule.projectId = data._id;
-                        schedule.id = schedule._id;
-                        schedule.start_date = formatDate(schedule.start_date, 'YYYY-MM-DD[T00:00:00.000Z]', 'DD-MM-YYYY');
-                        schedule.end_date = formatDate(schedule.end_date, 'YYYY-MM-DD[T00:00:00.000Z]', 'DD-MM-YYYY');
-                        this.dataset.push(schedule)
-                    }
+        getProjectService(this.topRole, this.filters).then(response => {
+            for(const data of response.data) {
+                data.id = data._id;
+                data.start_date = formatDate(data.start_date, 'YYYY-MM-DD[T00:00:00.000Z]', 'DD-MM-YYYY');
+                data.end_date = formatDate(data.end_date, 'YYYY-MM-DD[T00:00:00.000Z]', 'DD-MM-YYYY');
+                if(data.pm) {
+                    data.pm = data.pm.username
                 }
-                this.grid.data.parse(this.dataset);
-            });
+                this.dataset.push(data);
 
-
-
+                for(const schedule of data.schedules) {
+                    schedule.projectId = data._id;
+                    schedule.id = schedule._id;
+                    schedule.start_date = formatDate(schedule.start_date, 'YYYY-MM-DD[T00:00:00.000Z]', 'DD-MM-YYYY');
+                    schedule.end_date = formatDate(schedule.end_date, 'YYYY-MM-DD[T00:00:00.000Z]', 'DD-MM-YYYY');
+                    this.dataset.push(schedule)
+                }
+            }
+            this.grid.data.parse(this.dataset);
+        });
     },
     mounted: function () {
+        // window.addEventListener("keydown", e => {
+        //     console.log(String.fromCharCode(e.keyCode));
+        // });
+
+        var router = this.$router;
 
         var formatDate = function(date, initFormat, exitFormat) {
             var data = moment(date, initFormat).format(exitFormat);
@@ -102,46 +109,63 @@ export default {
 
         var config = {
                 columns: [
-                    { width: 150, id: 'name',header: [{ text: "<span class='headers-primary' >Designation</span>" },{ content: "inputFilter" }] },
-                    { width: 100, id: 'client',header: [{ text: "<span class='headers-primary' >Client</span>"  },{ content: "inputFilter" }] },
-                    { width: 100, id: 'country',header: [{ text: "<span class='headers-primary' >Country</span>"  },{ content: "inputFilter" }] },
-                    { width: 100, id: 'contact',header: [{ text: "<span class='headers-primary' >Contact</span>"  },{ content: "inputFilter" }] },
+                    { hidden: false, width: 150, id: 'wbs',header: [{ text: "<span class='headers-primary' >Réference</span>" },{ content: "inputFilter" }],editable: false, htmlEnable: true },
+                    { hidden: false, width: 150, id: 'name',header: [{ text: "<span class='headers-primary' >Designation</span>" },{ content: "inputFilter" }] ,htmlEnable: true},
+                    { hidden: false, width: 100, id: 'client',header: [{ text: "<span class='headers-primary' >Client</span>"  },{ content: "inputFilter" }] },
+                    { hidden: false, width: 100, id: 'contact',header: [{ text: "<span class='headers-primary' >Contact</span>"  },{ content: "inputFilter" }] },
+                    { hidden: false, width: 100, id: 'country',header: [{ text: "<span class='headers-primary' >Country</span>"  },{ content: "inputFilter" }] },
                     { 
+                        hidden: false, 
                         width: 160, id: 'stage',
                         header: [{ text: "<span class='headers-secondary' >Stage</span>" }, { content: "selectFilter" }],
                         editorType: "select",
-                        editable: this.topRole.canUpdateStage,
+                        editable: !this.topRole.canUpdateStage,
                         options: ["0. LEAD","1. OPPORTUNITY", "2. RFQ / RFI", "3. BID", "4. FINAL NEGOTIATION", "5. ACCORD CLIENT", "8. COMMANDE", "9. LIVRE", "10. FACTURE", "11. SUSPENDED", "12. PAYÉ"] 
                     },
-                    { width: 100, id: 'kam',header: [{ text: "<span class='headers-secondary' >KAM</span>" },{ content: "inputFilter" }] },
-                    { width: 100, id: 'pm',header: [{ text: "<span class='headers-secondary' >PM</span>" },{ content: "inputFilter" }] },
+                    { hidden: false, width: 100, id: 'kam',header: [{ text: "<span class='headers-secondary' >KAM</span>" },{ content: "inputFilter" }] },
+                    { hidden: false, width: 100, id: 'pm',header: [{ text: "<span class='headers-secondary' >PM</span>" },{ content: "inputFilter" }] },
                     {
+                        hidden: false, 
                         width: 160, id: 'temp',
                         header: [{ text: "<span class='headers-secondary' >TEMP</span>" }, { content: "selectFilter" }],
                         editorType: "select",
                         options: ["FROID", "MOYEN", "CHAUD"]
                     },
                     { 
+                        hidden: false, 
                         width: 160, id: 'domaine',
                         header: [{text :"<span class='headers-secondary' >Domaine</span>"}, { content: "selectFilter" }],
                         editorType: "select",
                         options: ["Training", "Product & System", "In-Service", "Improvaero"]
                     },
-                    { width: 100, id: 'charge',header: [{ text: "<span class='headers-tertiary' >Charge</span>" },{ content: "inputFilter" }] },
+                    { hidden: false, width: 100, id: 'cmde',header: [{ text: "<span class='headers-primary' >Cmde</span>"  },{ content: "inputFilter" }] },
+                    { hidden: false, width: 100, id: 'cmde_link',header: [{ text: "<span class='headers-primary' >Cmde_link</span>"  },{ content: "inputFilter" }] },
+                    { hidden: true, width: 100, id: 'bl',header: [{ text: "<span class='headers-primary' >BL</span>"  },{ content: "inputFilter" }] },
+                    { hidden: true, width: 100, id: 'bl_chrono',header: [{ text: "<span class='headers-primary' >BL_chrono</span>"  },{ content: "inputFilter" }] },
+                    { hidden: true, width: 100, id: 'facture',header: [{ text: "<span class='headers-tertiary' >Facture</span>" },{ content: "inputFilter" }] },
+                    { hidden: true, width: 100, id: 'facture_link',header: [{ text: "<span class='headers-tertiary' >Facture_link</span>" },{ content: "inputFilter" }] },
+                    { hidden: true, width: 100, id: 'facture_id',header: [{ text: "<span class='headers-tertiary' >Facture_id</span>" },{ content: "inputFilter" }] },
+                    { hidden: true, width: 100, id: 'facture_date',header: [{ text: "<span class='headers-tertiary' >Facture_date</span>" },{ content: "inputFilter" }] },
+                    { hidden: true, width: 100, id: 'regt_initial',header: [{ text: "<span class='headers-tertiary' >Regt_Initial</span>" },{ content: "inputFilter" }] },
+                    { hidden: true, width: 100, id: 'regt_expect',header: [{ text: "<span class='headers-tertiary' >Regt_Expect</span>" },{ content: "inputFilter" }] },
+                    { hidden: true, width: 100, id: 'regt_final',header: [{ text: "<span class='headers-tertiary' >Regt_Final</span>" },{ content: "inputFilter" }] },
+                    { hidden: true, width: 100, id: 'charge',header: [{ text: "<span class='headers-tertiary' >Charge</span>" },{ content: "inputFilter" }] },
+                    { hidden: true, width: 100, id: 'rate',header: [{ text: "<span class='headers-tertiary' >Rate</span>" },{ content: "inputFilter" }] },
                     {hidden: !this.topRole.financial, width: 100, id: 'ca',header: [{ text: "<span class='headers-tertiary' >CA</span>" },{ content: "inputFilter" }] },
-                    { width: 100,id: 'etp', header: [{ text: "<span class='headers-tertiary' >ETP</span>" },{ content: "inputFilter" }] },
-                    { width: 100,id: 'debours', header: [{ text: "<span class='headers-tertiary' >Debours</span>" },{ content: "inputFilter" }] },
-                    { width: 100, id: 'start_date',header: [{ text: "<span class='headers-tertiary' >Début</span>" },{ content: "inputFilter" }], type: 'date'},
-                    { width: 100, id: 'end_date',header: [{ text: "<span class='headers-tertiary' >Fin</span>" },{ content: "inputFilter" }], type: 'date'},
+                    { hidden: true, width: 100,id: 'etp', header: [{ text: "<span class='headers-tertiary' >ETP</span>" },{ content: "inputFilter" }] },
+                    { hidden: true, width: 100,id: 'debours', header: [{ text: "<span class='headers-tertiary' >Debours</span>" },{ content: "inputFilter" }] },
+                    { hidden: true, width: 100, id: 'start_date',header: [{ text: "<span class='headers-tertiary' >Début</span>" },{ content: "inputFilter" }], type: 'date'},
+                    { hidden: true, width: 100, id: 'end_date',header: [{ text: "<span class='headers-tertiary' >Fin</span>" },{ content: "inputFilter" }], type: 'date'},
                     {
-                        width: 160, id: 'status',
-                        header: [{ text: "Status" }, { content: "selectFilter" }],
+                        hidden: true, 
+                        width: 100, id: 'status',
+                        header: [{ text: "<span class='headers-secondary'Status</span>" }, { content: "selectFilter" }],
                         editorType: "select",
                         options: ["Renewal", "Extension", "New Contract"]
                     },
-                    { width: 100, id: 'comments',header: [{ text: "Comments" },{ content: "inputFilter" }] },
+                    { hidden: true, width: 100, id: 'comments',header: [{ text: "Comments" },{ content: "inputFilter" }] },
                     // { width: 100, id: 'ressource',header: [{ text: "Ressource" },{ content: "inputFilter" }] },
-                    { width: 100, id: 'duration',header: [{ text: "Jours" },{ content: "inputFilter" }]},
+                    { hidden: true, width: 100, id: 'duration',header: [{ text: "Jours" },{ content: "inputFilter" }]},
                     { hidden: true, id: 'progress',header: [{ text: "Progress" }]},
                     { hidden: true, id: 'parent',header: [{ text: "Parent" }]},
                     { hidden: true, id: 'id',header: [{ text: "Id" }]},
@@ -152,13 +176,134 @@ export default {
                 // data: this.gridData,
                 selection: "cell",
                 editable: this.topRole.canUpdate,
-                autoWidth: true,
+                // autoWidth: true,
                 resizable: true,
                 keyNavigation: true,
-                height: window.screen.availHeight*0.95,
+                height: window.screen.availHeight*0.80,
             };
 
-        this.grid = new TreeGridDHX(this.$refs.container, config);
+        this.grid = new GridDHX(this.$refs.container, config);
+
+        // this.grid.enableAutoWidth(true,500);
+
+        var data = [
+            {
+                "id": "projectView",
+                "html": "<span>Project</span>",
+                "type": "button",
+                "twoState": true,
+            },
+            {
+                "type": "separator"
+            },        
+            {
+                "id": "financialView",
+                "html": "<span>Financial</span>",
+                "type": "button",
+                "twoState": true,
+            },
+            {
+                "type": "separator"
+            },        
+            {
+                "id": "resourceView",
+                "html": "<span>Resources</span>",
+                "type": "button",
+                "twoState": true,
+            },
+            {
+                "type": "separator"
+            },        
+            {
+                "id": "infoView",
+                "html": "<span>Information</span>",
+                "type": "button",
+                "twoState": true,
+            },
+        ];
+ 
+        var toolbar = new ToolbarDHX("menu");
+        toolbar.data.parse(data);
+        
+        toolbar.events.on("Click", (id) => {
+            switch (id) {
+                case "projectView": {
+                    let button = toolbar.data.getItem('projectView')
+                    if(button.active == true) {
+                        for( let id of this.groupsTitle.project) {
+                            this.grid.showColumn(id);
+                        }
+                    } else {
+                        for( let id of this.groupsTitle.project) {
+                            this.grid.hideColumn(id);
+                        }
+                    }
+                    this.grid.paint();
+                    break;
+                }
+                case "financialView": {
+                    let button = toolbar.data.getItem('financialView')
+                    if(button.active == true) {
+                        for( let id of this.groupsTitle.financial) {
+                            this.grid.showColumn(id);
+                        }
+                    } else {
+                        for( let id of this.groupsTitle.financial) {
+                            this.grid.hideColumn(id);
+                        }
+                    }
+                    this.grid.paint();
+                    break;
+                }
+                case "resourceView": {
+                    let button = toolbar.data.getItem('resourceView')
+                    if(button.active == true) {
+                        for( let id of this.groupsTitle.resources) {
+                            this.grid.showColumn(id);
+                        }
+                    } else {
+                        for( let id of this.groupsTitle.resources) {
+                            this.grid.hideColumn(id);
+                        }
+                    }
+                    this.grid.paint();
+                    break;
+                }
+                case "infoView": {
+                    let button = toolbar.data.getItem('infoView')
+                    if(button.active == true) {
+                        for( let id of this.groupsTitle.info) {
+                            this.grid.showColumn(id);
+                        }
+                    } else {
+                        for( let id of this.groupsTitle.info) {
+                            this.grid.hideColumn(id);
+                        }
+                    }
+                    this.grid.paint();
+                    break;
+                }
+            }
+        });
+
+        this.grid.events.on("CellClick", (row,column,e) => {
+            // if(row.type === "project") {
+            //     if(row.schedules) {
+            //         for(const wp of row.schedules) {
+            //             console.log(wp);
+            //             if(this.grid.isRowHidden(wp._id)) {
+            //                 this.grid.showRow(wp._id);
+            //             } else {
+            //                 this.grid.hideRow(wp._id);
+            //             }
+            //         }
+            //     }
+            // }
+
+            if(column.id === "wbs" && row.type === "project") {
+                router.push("/project/"+ row._id);
+            }
+        });
 
         // for(let title of this.groupsTitle.primary) {
         //     var doc = document.querySelector('[title="'+ title +'"]');
@@ -194,9 +339,11 @@ export default {
 
                 if(data.type === "project") {
                     project._id = data.id;
+                    project.wbs = data.wbs;
                     project.name = data.name;
                     // project.type = data.type;
                     project.client = data.client;
+                    project.contact = data.contact;
                     project.temp = data.temp;
                     project.kam = data.kam;
                     project.pm = data.pm;
@@ -204,7 +351,7 @@ export default {
                     project.country = data.country;
                     project.stage = data.stage;
                     project.comments = data.comments;
-                    project.resource = data.ressource;
+                    // project.resource = data.ressource;
                     project.status = data.status;
                     project.start_date = startDate;
                     project.end_date = endDate;
@@ -311,12 +458,20 @@ export default {
 </script>
 <style>
     @import "~dhx-suite/codebase/suite.min.css";
+
+    .widget-box {
+        height: 88vh;
+    }
+
+    .grid_custom {
+        overflow-x: scroll;
+    }
     
     .project_row {
         background: RGB(26, 149, 219, 0.8);
     }
 
-    /*.dhx_first-column-cell {
+    .dhx_first-column-cell {
         background: RGB(26, 149, 219, 0.8);
     }
 
@@ -330,9 +485,17 @@ export default {
 
     .header_tertiary{
         background: RGB(204, 111, 4);
-    }*/
+    }
 
     .task_row {
         background: RGB(57, 81, 94, 0.3);
+    }
+
+    .fa-external-link-alt {
+        cursor: pointer;
+        font-size: 14px;
+        opacity: 0.5;
+        margin-left: 15px;
+        padding: 5px;
     }
 </style>

@@ -19,11 +19,13 @@ import {
   faPlus,
   faPencilAlt,
   faTimes,
-  faTimesCircle
+  faTimesCircle,
+  faChevronDown,
+  faChevronUp
 } from '@fortawesome/free-solid-svg-icons';
 
-library.add(faHome, faUser, faUserPlus, faSignInAlt, faSignOutAlt, faPlus, faPencilAlt, faTimes, faTimesCircle);
-
+library.add(faHome, faUser, faUserPlus, faSignInAlt, faSignOutAlt, faPlus, faPencilAlt, faTimes, faTimesCircle, faChevronDown, faChevronUp);
+// dom.watch();
 Vue.config.productionTip = false;
 
 Vue.use(VeeValidate);

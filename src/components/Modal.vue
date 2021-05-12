@@ -37,6 +37,7 @@ import moment from 'moment';
                 //     projectId: ev.project_id,
                 //     scheduleId: ev.schedule_id
                 // }
+                ev.end_date = moment(ev.start_date).add(ev.tps, 'hours');
                 ev.user = this.currentUser.sigle;
                 EventServices.create(ev).then(data => {
                 })
@@ -45,7 +46,6 @@ import moment from 'moment';
                     console.log(data)
                 })
             }
-            console.log(ev)
             this.close();
         },
         deleteEvent(id) {

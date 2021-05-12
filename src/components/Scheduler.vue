@@ -82,7 +82,7 @@ export default {
 
         this.scheduler.clearAll();
 
-        this.scheduler.deleteMarkedTimespan()
+        this.scheduler.deleteMarkedTimespan();
 
         // var getProjectService = (role, filters) => {
         //     if(role.name === "user") {
@@ -149,8 +149,6 @@ export default {
                  return "<p class='badge'>"+event.client+"</p><p class='badge'>"+event.time+"</p>"
             }
         };
-
-        //  dhtmlx.compat("dnd")
 
         var config = {
 				css: "dhx_layout-cell--bordered",
@@ -223,15 +221,6 @@ export default {
             "next"
         ];
 
-        this.scheduler.attachEvent("onSchedulerReady", () => {
-            this.scheduler.templates.event_bar_date = function(start,end,event){
-                return "• <b>"+event.tps+" hours</b> ";
-            };
-            requestAnimationFrame(() => {
-            this.scheduler.setCurrentView(new Date(), "month");
-            });
-        });
-
         layout.getCell("tree-cell").attach(this.tree);
         layout.getCell("scheduler-cell").attach(this.scheduler);
 
@@ -253,7 +242,21 @@ export default {
 
             this.editedEvent = event;
             return false
-        })
+        });
+
+        this.scheduler.attachEvent("onDragEnd", (id, mode, e) => {
+            const ev = this.scheduler.getEvent(id);
+            EventServices.update(ev.id, ev);
+        });
+
+        this.scheduler.attachEvent("onSchedulerReady", () => {
+            this.scheduler.templates.event_bar_date = function(start,end,event){
+                return "• <b>"+event.tps+" hours</b> ";
+            };
+            requestAnimationFrame(() => {
+            this.scheduler.setCurrentView(new Date(), "month");
+            });
+        });
 
         this.getEventService(this.topRole).then( response => {
             for(const event of response.data) {
